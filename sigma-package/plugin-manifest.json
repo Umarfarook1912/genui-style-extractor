@@ -1,0 +1,12 @@
+{
+  "name": "GenUI Style Extractor",
+  "version": "1.0.0",
+  "description": "Extract UI styles and convert to Tailwind CSS",
+  "author": "Your Team",
+  "services": ["desk"],  
+  "entry": {
+    "web": {
+      "main": "app/index.html"
+    }
+  }
+}

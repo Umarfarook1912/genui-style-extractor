@@ -1,0 +1,23 @@
+{
+  "name": "convertstyles",
+  "version": "1.0.0",
+  "description": "Zoho Catalyst function to convert CSS styles to Tailwind classes",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js",
+    "start": "node dev-server.js"
+  },
+  "keywords": [
+    "catalyst",
+    "zoho",
+    "css",
+    "tailwind",
+    "genui"
+  ],
+  "author": "GenUI Team",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^2.2.1",
+    "express": "^5.2.1"
+  }
+}

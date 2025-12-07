@@ -1,0 +1,8 @@
+{
+  "project_name": "genui",
+  "functions": {
+    "convertStyles": {
+      "runtime": "node16"
+    }
+  }
+}
