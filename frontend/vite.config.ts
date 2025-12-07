@@ -9,6 +9,7 @@ export default defineConfig({
       },
     }),
   ],
+  base: './',  // Use relative paths for assets in build output
   build: {
     outDir: '../sigma-package/app',   // ⬅ important for Sigma
     emptyOutDir: true

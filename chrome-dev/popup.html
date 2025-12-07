@@ -23,9 +23,9 @@
 </head>
 
 <body>
-    <div id="root"></div>
-    <!-- This will be injected by Vite build -->
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- embed the built app inside an iframe so the extension popup reliably loads the production build -->
+    <iframe id="genui-frame" src="./app/index.html" frameborder="0"
+        style="width:100%;height:520px;border:none;overflow:hidden;"></iframe>
 </body>
 
 </html>

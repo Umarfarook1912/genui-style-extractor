@@ -21,21 +21,47 @@ export default function App() {
   const [format, setFormat] = useState<OutputFormat>("tailwind");
   const [useRem, setUseRem] = useState(true);
   const [extracting, setExtracting] = useState(false);
+  const [persistentWindow, setPersistentWindow] = useState<boolean>(() => {
+    try {
+      const v = localStorage.getItem('genui_persistent_window');
+      return v === '1';
+    } catch (e) {
+      return false;
+    }
+  });
 
   // React Query mutation for style conversion
   const { mutate: convertStyles, data, isPending, isError, error } = useConvertStyles();
 
   // Listen for messages from Chrome extension or dev harness
   useEffect(() => {
-    // For Chrome extension communication
-    if (typeof chrome !== "undefined" && chrome.runtime) {
-      chrome.runtime.onMessage.addListener((message: any) => {
-        if (message.action === "STYLES_READY") {
-          console.log("Styles received:", message.styles);
-          setStyles(message.styles);
-          setExtracting(false);
+    // For Chrome extension communication - guard access so dev server doesn't crash
+    const ext = (window as any).chrome ?? (window as any).browser ?? null;
+    const runtime = ext?.runtime ?? null;
+    if (runtime) {
+      // only attach listener when the API surface exists
+      if (runtime.onMessage && typeof runtime.onMessage.addListener === 'function') {
+        runtime.onMessage.addListener((message: any) => {
+          if (message.action === "STYLES_READY") {
+            console.log("Styles received:", message.styles);
+            setStyles(message.styles);
+            setExtracting(false);
+          }
+        });
+      }
+
+      // When the popup opens, request the latest stored styles from background if available
+      if (typeof runtime.sendMessage === 'function') {
+        try {
+          runtime.sendMessage({ action: 'GET_LATEST_STYLES' }, (resp: any) => {
+            if (resp && resp.styles) {
+              setStyles(resp.styles);
+            }
+          });
+        } catch (e) {
+          // ignore if sendMessage not available or fails in dev
         }
-      });
+      }
     }
 
     // For development with chrome-dev harness
@@ -55,10 +81,126 @@ export default function App() {
     setExtracting(true);
     setStyles(null);
 
-    // Send message to content script
-    if (typeof chrome !== "undefined" && chrome.tabs) {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      chrome.tabs.sendMessage(tab.id!, { action: "START_EXTRACTION" });
+    // If user requested a persistent window, open a popup window that stays open
+    const ext = (window as any).chrome ?? (window as any).browser ?? null;
+    const windowsApi = ext?.windows ?? null;
+    const tabsApi = ext?.tabs ?? null;
+
+    if (persistentWindow && windowsApi && typeof windowsApi.create === 'function') {
+      try {
+        windowsApi.create(
+          {
+            url: (ext.runtime && typeof ext.runtime.getURL === 'function') ? ext.runtime.getURL('app/index.html?persistent=1') : 'app/index.html?persistent=1',
+            type: 'popup',
+            width: 420,
+            height: 720,
+          },
+          async () => {
+            // After opening the persistent window, trigger extraction on the active tab
+            if (tabsApi && typeof tabsApi.query === 'function') {
+              const tabs = await new Promise<any[]>((res) => {
+                try {
+                  tabsApi.query({ active: true, currentWindow: true }, (t: any) => res(t));
+                } catch (err) {
+                  // try promise form
+                  try {
+                    (tabsApi.query as any)({ active: true, currentWindow: true }).then((t: any) => res(t)).catch(() => res([]));
+                  } catch (e) {
+                    res([]);
+                  }
+                }
+              });
+              const tab = tabs[0];
+              if (tab) {
+                // Focus the page tab so user can click elements
+                try { if (typeof tabsApi.update === 'function') await new Promise((r) => tabsApi.update(tab.id!, { active: true }, r)); } catch (e) { }
+                try { if (typeof tabsApi.sendMessage === 'function') tabsApi.sendMessage(tab.id!, { action: 'START_EXTRACTION' }); } catch (e) { }
+              }
+            }
+          }
+        );
+      } catch (e) {
+        // fallback to normal flow if windows.create not available
+        if (tabsApi && typeof tabsApi.query === 'function') {
+          const tabs = await new Promise<any[]>((res) => {
+            try {
+              tabsApi.query({ active: true, currentWindow: true }, (t: any) => res(t));
+            } catch (err) {
+              try {
+                (tabsApi.query as any)({ active: true, currentWindow: true }).then((t: any) => res(t)).catch(() => res([]));
+              } catch (e2) {
+                res([]);
+              }
+            }
+          });
+          const tab = tabs[0];
+          try { if (tab && typeof tabsApi.sendMessage === 'function') tabsApi.sendMessage(tab.id!, { action: 'START_EXTRACTION' }); } catch (e) { }
+        }
+      }
+      return;
+    }
+
+    // Default behavior: send message to content script in current active tab
+    if (tabsApi && typeof tabsApi.query === 'function') {
+      const tabs = await new Promise<any[]>((res) => {
+        try {
+          tabsApi.query({ active: true, currentWindow: true }, (t: any) => res(t));
+        } catch (err) {
+          try {
+            (tabsApi.query as any)({ active: true, currentWindow: true }).then((t: any) => res(t)).catch(() => res([]));
+          } catch (e) {
+            res([]);
+          }
+        }
+      });
+      const tab = tabs[0];
+      try {
+        if (tab) {
+          // Try to inject the content script programmatically if scripting API is available
+          const scripting = (window as any).chrome?.scripting ?? (window as any).browser?.scripting ?? null;
+          if (scripting && typeof scripting.executeScript === 'function') {
+            try {
+              // executeScript may accept a Promise or callback depending on browser
+              const exec = scripting.executeScript as any;
+              // Use the extension file name; this will inject `content-script.js` into the page
+              await new Promise((res) => {
+                try {
+                  exec({ target: { tabId: tab.id }, files: ['content-script.js'] }, () => res(null));
+                } catch (err) {
+                  // try promise style
+                  try {
+                    exec({ target: { tabId: tab.id }, files: ['content-script.js'] }).then(() => res(null)).catch(() => res(null));
+                  } catch (e) {
+                    res(null);
+                  }
+                }
+              });
+              console.log('Attempted to inject content-script.js into tab', tab.id);
+            } catch (e) {
+              console.error('Error while injecting content script:', e);
+              // ignore injection errors
+            }
+          }
+
+          if (typeof tabsApi.sendMessage === 'function') {
+            try {
+              tabsApi.sendMessage(tab.id!, { action: "START_EXTRACTION" }, (resp: any) => {
+                // check for runtime errors
+                const lastErr = (window as any).chrome?.runtime?.lastError ?? (window as any).browser?.runtime?.lastError ?? null;
+                if (lastErr) {
+                  console.error('tabs.sendMessage lastError:', lastErr);
+                  alert('Failed to message the page. The content script may not be injected on this page.');
+                } else {
+                  console.log('START_EXTRACTION sent, response:', resp);
+                }
+              });
+            } catch (e) {
+              console.error('Error calling tabs.sendMessage:', e);
+              alert('Failed to start extraction: ' + ((e as any)?.message || String(e)));
+            }
+          }
+        }
+      } catch (e) { }
     }
   };
 
@@ -85,9 +227,23 @@ export default function App() {
         {!styles && !extracting && (
           <Card className="welcome">
             <p>Select an element from any webpage to extract its styles</p>
-            <Button onClick={startExtraction} variant="primary">
-              🎯 Start Extraction
-            </Button>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexDirection: 'column' }}>
+              <label style={{ fontSize: 13 }}>
+                <input
+                  type="checkbox"
+                  checked={persistentWindow}
+                  onChange={(e) => {
+                    const v = !!e.target.checked;
+                    setPersistentWindow(v);
+                    try { localStorage.setItem('genui_persistent_window', v ? '1' : '0'); } catch (err) { }
+                  }}
+                />{' '}
+                Open persistent window for extraction
+              </label>
+              <Button onClick={startExtraction} variant="primary">
+                🎯 Start Extraction
+              </Button>
+            </div>
           </Card>
         )}
 
@@ -95,6 +251,9 @@ export default function App() {
         {extracting && (
           <div className="extracting">
             <Loader text="Click on any element on the webpage..." />
+            <p style={{ fontSize: 12, color: '#666', marginTop: 8 }}>
+              Tip: The popup will close while you click the page. Re-open the extension to see results.
+            </p>
           </div>
         )}
 
@@ -143,6 +302,20 @@ export default function App() {
 
             {/* Conversion Options Card */}
             <Card title="Conversion Options" className="conversion-options">
+              <div style={{ marginBottom: 8 }}>
+                <label style={{ fontSize: 13 }}>
+                  <input
+                    type="checkbox"
+                    checked={persistentWindow}
+                    onChange={(e) => {
+                      const v = !!e.target.checked;
+                      setPersistentWindow(v);
+                      try { localStorage.setItem('genui_persistent_window', v ? '1' : '0'); } catch (err) { }
+                    }}
+                  />{' '}
+                  Open persistent window for extraction
+                </label>
+              </div>
               <div className="format-selector">
                 <label>
                   <input
