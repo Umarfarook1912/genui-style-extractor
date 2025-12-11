@@ -11,10 +11,13 @@
         "scripting",
         "activeTab",
         "tabs",
-        "windows"
+        "windows",
+        "storage"
     ],
     "host_permissions": [
-        "<all_urls>"
+        "<all_urls>",
+        "http://localhost/*",
+        "https://*.catalystserverless.com/*"
     ],
     "background": {
         "service_worker": "background.js"

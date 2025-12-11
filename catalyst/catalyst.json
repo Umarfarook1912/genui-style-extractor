@@ -1,8 +1,12 @@
 {
-  "project_name": "genui",
+  "project_name": "genui-backend",
+  "project_id": "50209000000021009",
   "functions": {
-    "convertStyles": {
-      "runtime": "node16"
-    }
+    "genui_backend_function": {},
+    "targets": [
+      "convertStyles"
+    ],
+    "ignore": [],
+    "source": "functions"
   }
 }

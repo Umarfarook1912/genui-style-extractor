@@ -10,9 +10,9 @@
  */
 export const CATALYST_CONVERT_URL =
     import.meta.env.VITE_CATALYST_ENDPOINT ||
-    "http://localhost:3000/convertStyles";
+    "https://genui-backend-908193831.development.catalystserverless.com/server/convertStyles/";
 
 /**
  * Fallback endpoint for development
  */
-export const DEV_ENDPOINT = "http://localhost:3000/convertStyles";
+export const DEV_ENDPOINT = "https://genui-backend-908193831.development.catalystserverless.com/server/convertStyles/";
