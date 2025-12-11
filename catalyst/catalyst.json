@@ -2,9 +2,9 @@
   "project_name": "genui-backend",
   "project_id": "50209000000021009",
   "functions": {
-    "genui_backend_function": {},
     "targets": [
-      "convertStyles"
+      "convertStyles",
+      "getHistory"
     ],
     "ignore": [],
     "source": "functions"

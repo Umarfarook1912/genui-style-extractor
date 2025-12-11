@@ -5,6 +5,7 @@ const { IncomingMessage, ServerResponse } = require("http");
 /**
  * Zoho Catalyst Function: convertStyles
  * Converts CSS styles to Tailwind classes or formatted CSS
+ * Optional: Saves to Catalyst Datastore if table exists
  */
 
 // Helper: Convert px to rem
@@ -130,6 +131,70 @@ function formatCSS(styles, useRem = true) {
 }
 
 /**
+ * Save conversion to Catalyst Datastore
+ * @param {Object} inputStyles - Original styles object
+ * @param {String} format - Output format (css/tailwind/jsx)
+ * @param {String} outputCode - Generated code
+ * @param {String} userAgent - Browser user agent
+ * @param {IncomingMessage} req - Request object for Catalyst context
+ */
+async function saveToDatastore(inputStyles, format, outputCode, userAgent = '', req) {
+	try {
+		// Lazy load SDK only when needed
+		const catalyst = require('zcatalyst-sdk-node');
+		const catalystApp = catalyst.initialize(req);
+		const table = catalystApp.datastore().table('ConversionHistory');
+		
+		const rowData = {
+			format: format,
+			input_styles: JSON.stringify(inputStyles),
+			output_code: outputCode,
+			user_agent: userAgent || 'Unknown'
+		};
+
+		// Try insertRow first (common API). If not available, try insertRows as fallback.
+		if (typeof table.insertRow === 'function') {
+			await table.insertRow(rowData);
+			console.log('✅ Conversion saved to datastore via insertRow');
+			return true;
+		} else if (typeof table.insertRows === 'function') {
+			await table.insertRows([rowData]);
+			console.log('✅ Conversion saved to datastore via insertRows');
+			return true;
+		} else if (typeof table.addRow === 'function') {
+			await table.addRow(rowData);
+			console.log('✅ Conversion saved to datastore via addRow');
+			return true;
+		} else {
+			// Last-resort: try calling createRow or insert as generic method names
+			if (typeof table.createRow === 'function') {
+				await table.createRow(rowData);
+				console.log('✅ Conversion saved to datastore via createRow');
+				return true;
+			}
+			console.log('⚠️ No recognized insert method on table object; available keys:', Object.keys(table));
+			return false;
+		}
+	} catch (error) {
+		// Don't throw - saving to datastore is optional
+		// Table might not exist yet, or other issues
+		console.error('ℹ️ Datastore save skipped, error details:');
+		if (error && error.message) console.error('message:', error.message);
+		if (error && error.stack) console.error(error.stack);
+		try {
+			// also log the table methods if catalyst init succeeded
+			const catalyst = require('zcatalyst-sdk-node');
+			const app = catalyst.initialize(req);
+			const tbl = app.datastore().table('ConversionHistory');
+			console.error('Table object keys:', Object.keys(tbl));
+		} catch (err2) {
+			console.error('error while inspecting table object:', err2 && err2.message);
+		}
+		return false;
+	}
+}
+
+/**
  * Main function handler
  * @param {IncomingMessage} req 
  * @param {ServerResponse} res 
@@ -202,6 +267,11 @@ module.exports = (req, res) => {
 				originalStyles: styles
 			}));
 			res.end();
+
+			// Save to Datastore (async, don't block response)
+			// Pass req for Catalyst context
+			saveToDatastore(styles, format, convertedCode, req.headers['user-agent'], req)
+				.catch(err => console.log('Datastore save failed (non-critical):', err.message));
 
 		} catch (error) {
 			console.error('Error in convertStyles function:', error);
