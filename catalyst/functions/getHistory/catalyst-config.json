@@ -1,1 +1,10 @@
-{"execution":{"main":"index.js"},"deployment":{"stack":"node18","name":"getHistory","type":"advancedio"}}
+{
+    "execution": {
+        "main": "index.js"
+    },
+    "deployment": {
+        "stack": "node18",
+        "name": "getHistory",
+        "type": "advancedio"
+    }
+}
