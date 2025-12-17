@@ -16,3 +16,8 @@ export const CATALYST_CONVERT_URL =
  * Fallback endpoint for development
  */
 export const DEV_ENDPOINT = "https://genui-backend-908193831.development.catalystserverless.com/server/convertStyles/";
+
+/**
+ * Base URL for all API endpoints
+ */
+export const API_BASE_URL = "https://genui-backend-908193831.development.catalystserverless.com";

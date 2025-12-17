@@ -5,8 +5,24 @@ const catalyst = require('zcatalyst-sdk-node');
 /**
  * Zoho Catalyst Function: getHistory
  * Retrieves conversion history from Datastore
- * Supports pagination
+ * Supports pagination and user-specific filtering
  */
+
+/**
+ * Get authenticated user ID from Catalyst request
+ * @param {Object} catalystApp - Initialized Catalyst app
+ * @returns {String|null} User ID or null if not authenticated
+ */
+async function getAuthenticatedUserId(catalystApp) {
+    try {
+        const userManagement = catalystApp.userManagement();
+        const currentUser = await userManagement.getCurrentUser();
+        return currentUser && currentUser.user_id ? String(currentUser.user_id) : null;
+    } catch (error) {
+        console.log('No authenticated user:', error.message);
+        return null;
+    }
+}
 
 module.exports = (req, res) => {
     // Handle CORS
@@ -60,17 +76,25 @@ async function getConversionHistory(req, limit, offset, formatFilter) {
         const catalystApp = catalyst.initialize(req);
         const table = catalystApp.datastore().table('ConversionHistory');
 
+        // Get authenticated user ID
+        const userId = await getAuthenticatedUserId(catalystApp);
+
+        if (!userId) {
+            // No authentication - return empty results for security
+            return {
+                success: true,
+                data: [],
+                pagination: { limit, offset, total: 0, hasMore: false },
+                message: 'Please log in to view your conversion history'
+            };
+        }
+
         // Get all rows (Catalyst SDK method)
         const result = await table.getAllRows();
         let records = result || [];
 
-        // Filter by format if specified
-        if (formatFilter) {
-            records = records.filter(record => record.format === formatFilter);
-        }
-
-        // Sort by creation time (most recent first)
-        records.sort((a, b) => new Date(b.CREATEDTIME) - new Date(a.CREATEDTIME));
+        // Filter by user ID (only show current user's conversions)
+        records = records.filter(record => String(record.user_id) === String(userId));
 
         // Get total count
         const total = records.length;
@@ -78,14 +102,15 @@ async function getConversionHistory(req, limit, offset, formatFilter) {
         // Apply pagination
         const paginatedRecords = records.slice(offset, offset + limit);
 
-        // Transform records for frontend
+        // Transform records to match frontend expectations (snake_case keys)
         const conversions = paginatedRecords.map(record => ({
             id: record.ROWID,
             format: record.format,
-            inputStyles: JSON.parse(record.input_styles),
-            outputCode: record.output_code,
-            userAgent: record.user_agent,
-            createdAt: record.CREATEDTIME
+            // keep original input_styles as stored (stringified JSON)
+            input_styles: record.input_styles,
+            output_code: record.output_code,
+            user_agent: record.user_agent,
+            created_time: record.CREATEDTIME
         }));
 
         return {

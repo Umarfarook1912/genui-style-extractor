@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>GenUI - Authentication</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .status {
+            margin: 1.5rem 0;
+            font-size: 1.1rem;
+        }
+
+        .success {
+            color: #10b981;
+        }
+
+        .error {
+            color: #ef4444;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎨 GenUI</h1>
+        <div id="status" class="status">Processing authentication...</div>
+        <button id="closeBtn" class="btn" style="display:none">Close Window</button>
+    </div>
+    <script>
+        // Handle OAuth callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+        const statusEl = document.getElementById('status');
+        const closeBtn = document.getElementById('closeBtn');
+
+        if (error) {
+            statusEl.className = 'status error';
+            statusEl.textContent = '❌ Authentication failed: ' + error;
+            closeBtn.style.display = 'block';
+        } else if (code) {
+            // Send auth code to parent window (extension popup)
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'ZOHO_AUTH_SUCCESS',
+                    code: code
+                }, '*');
+                statusEl.className = 'status success';
+                statusEl.textContent = '✅ Authentication successful! You can close this window.';
+                setTimeout(() => window.close(), 2000);
+            } else {
+                // Store in localStorage for extension to pick up
+                localStorage.setItem('zoho_auth_code', code);
+                statusEl.className = 'status success';
+                statusEl.textContent = '✅ Authenticated! Redirecting...';
+                setTimeout(() => {
+                    window.location.href = chrome.runtime.getURL('app/index.html');
+                }, 1500);
+            }
+            closeBtn.style.display = 'block';
+        } else {
+            statusEl.className = 'status error';
+            statusEl.textContent = '❌ No authentication code received';
+            closeBtn.style.display = 'block';
+        }
+
+        closeBtn.onclick = () => window.close();
+    </script>
+</body>
+
+</html>

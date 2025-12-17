@@ -16,7 +16,7 @@ const CATALYST_CONFIG = {
     environment: 'development', // 'development' or 'production'
 
     // Timeout for API calls (milliseconds)
-    timeout: 10000,
+    timeout: 20000,
 
     // Enable logging
     enableLogs: true

@@ -33,6 +33,7 @@ const convertStylesAPI = async (
         headers: {
             "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify(params),
     });
 

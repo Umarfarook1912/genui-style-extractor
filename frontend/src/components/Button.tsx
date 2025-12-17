@@ -10,6 +10,7 @@ interface ButtonProps {
     disabled?: boolean;
     className?: string;
     type?: "button" | "submit" | "reset";
+    style?: React.CSSProperties;
 }
 
 export const Button = ({
@@ -19,6 +20,7 @@ export const Button = ({
     disabled = false,
     className = "",
     type = "button",
+    style,
 }: ButtonProps) => {
     const baseClass = "btn";
     const variantClass = `btn-${variant}`;
@@ -30,6 +32,7 @@ export const Button = ({
             className={combinedClass}
             onClick={onClick}
             disabled={disabled}
+            style={style}
         >
             {children}
         </button>

@@ -131,6 +131,22 @@ function formatCSS(styles, useRem = true) {
 }
 
 /**
+ * Get authenticated user ID from Catalyst request
+ * @param {Object} catalystApp - Initialized Catalyst app
+ * @returns {String|null} User ID or null if not authenticated
+ */
+async function getAuthenticatedUserId(catalystApp) {
+	try {
+		const userManagement = catalystApp.userManagement();
+		const currentUser = await userManagement.getCurrentUser();
+		return currentUser && currentUser.user_id ? String(currentUser.user_id) : null;
+	} catch (error) {
+		console.log('No authenticated user:', error.message);
+		return null;
+	}
+}
+
+/**
  * Save conversion to Catalyst Datastore
  * @param {Object} inputStyles - Original styles object
  * @param {String} format - Output format (css/tailwind/jsx)
@@ -145,11 +161,15 @@ async function saveToDatastore(inputStyles, format, outputCode, userAgent = '', 
 		const catalystApp = catalyst.initialize(req);
 		const table = catalystApp.datastore().table('ConversionHistory');
 
+		// Get authenticated user ID (optional - works with or without auth)
+		const userId = await getAuthenticatedUserId(catalystApp);
+
 		const rowData = {
 			format: format,
 			input_styles: JSON.stringify(inputStyles),
 			output_code: outputCode,
-			user_agent: userAgent || 'Unknown'
+			user_agent: userAgent || 'Unknown',
+			user_id: userId || '0' // '0' for anonymous/unauthenticated users
 		};
 
 		// Try insertRow first (common API). If not available, try insertRows as fallback.
@@ -220,23 +240,78 @@ module.exports = (req, res) => {
 		return;
 	}
 
-	// Read request body
+	// Read request body with safety guards
 	let body = '';
+	let aborted = false;
+	let responded = false;
+
+	console.log('convertStyles handler invoked, method=', req.method);
+
+	// Safety: guard against excessively large bodies or stalled uploads
+	const MAX_BODY_SIZE = 256 * 1024; // 256 KB should be plenty for styles
+	let bodyTimeout = setTimeout(() => {
+		console.error('Request body read timed out');
+		aborted = true;
+		// destroy the request stream to stop further data events
+		if (typeof req.destroy === 'function') req.destroy();
+		if (!responded) {
+			responded = true;
+			try {
+				res.writeHead(408, { 'Content-Type': 'application/json' });
+				res.write(JSON.stringify({ status: 'failure', data: { message: 'Request body read timed out' } }));
+				res.end();
+			} catch (e) { console.error('Error while sending timeout response:', e && e.message); }
+		}
+	}, 10000); // 10s
+
 	req.on('data', chunk => {
+		if (aborted) return;
 		body += chunk.toString();
+		if (body.length > MAX_BODY_SIZE) {
+			console.error('Request body too large, aborting');
+			aborted = true;
+			if (typeof req.destroy === 'function') req.destroy();
+			if (!responded) {
+				responded = true;
+				try {
+					res.writeHead(413, { 'Content-Type': 'application/json' });
+					res.write(JSON.stringify({ error: 'Payload too large' }));
+					res.end();
+				} catch (e) { console.error('Error while sending payload too large response:', e && e.message); }
+			}
+		}
+	});
+
+	req.on('error', err => {
+		console.error('Request stream error:', err && err.message);
+		aborted = true;
+		if (!responded) {
+			responded = true;
+			try {
+				res.writeHead(500, { 'Content-Type': 'application/json' });
+				res.write(JSON.stringify({ error: 'Request stream error', message: err && err.message }));
+				res.end();
+			} catch (e) { console.error('Error while sending request error response:', e && e.message); }
+		}
 	});
 
 	req.on('end', () => {
+		clearTimeout(bodyTimeout);
+		if (aborted) {
+			console.warn('Request ended after abort; skipping processing');
+			return;
+		}
 		try {
 			const requestBody = JSON.parse(body);
 			const { styles, format = 'css', useRem = true } = requestBody;
 
 			if (!styles || typeof styles !== 'object') {
-				res.writeHead(400, { 'Content-Type': 'application/json' });
-				res.write(JSON.stringify({
-					error: 'Invalid request. "styles" object is required.'
-				}));
-				res.end();
+				if (!responded) {
+					responded = true;
+					res.writeHead(400, { 'Content-Type': 'application/json' });
+					res.write(JSON.stringify({ error: 'Invalid request. "styles" object is required.' }));
+					res.end();
+				}
 				return;
 			}
 
@@ -250,37 +325,42 @@ module.exports = (req, res) => {
 			} else if (format === 'jsx') {
 				convertedCode = `style={${JSON.stringify(styles, null, 2)}}`;
 			} else {
-				res.writeHead(400, { 'Content-Type': 'application/json' });
-				res.write(JSON.stringify({
-					error: 'Invalid format. Use "css", "tailwind", or "jsx".'
-				}));
-				res.end();
+				if (!responded) {
+					responded = true;
+					res.writeHead(400, { 'Content-Type': 'application/json' });
+					res.write(JSON.stringify({ error: 'Invalid format. Use "css", "tailwind", or "jsx".' }));
+					res.end();
+				}
 				return;
 			}
 
 			// Send successful response
-			res.writeHead(200, { 'Content-Type': 'application/json' });
-			res.write(JSON.stringify({
-				success: true,
-				format,
-				code: convertedCode,
-				originalStyles: styles
-			}));
-			res.end();
+			if (!responded) {
+				responded = true;
+				res.writeHead(200, { 'Content-Type': 'application/json' });
+				res.write(JSON.stringify({ success: true, format, code: convertedCode, originalStyles: styles }));
+				res.end();
+			}
 
-			// Save to Datastore (async, don't block response)
-			// Pass req for Catalyst context
-			saveToDatastore(styles, format, convertedCode, req.headers['user-agent'], req)
-				.catch(err => console.log('Datastore save failed (non-critical):', err.message));
+			// Save to Datastore asynchronously without blocking the response
+			setImmediate(() => {
+				saveToDatastore(styles, format, convertedCode, req.headers['user-agent'], req)
+					.catch(err => console.log('Datastore save failed (non-critical):', err && err.message));
+			});
 
 		} catch (error) {
-			console.error('Error in convertStyles function:', error);
-			res.writeHead(500, { 'Content-Type': 'application/json' });
-			res.write(JSON.stringify({
-				error: 'Internal server error',
-				message: error.message
-			}));
-			res.end();
+			console.error('Error in convertStyles function:', error && (error.stack || error.message));
+			if (!responded) {
+				responded = true;
+				if (error && error instanceof SyntaxError) {
+					res.writeHead(400, { 'Content-Type': 'application/json' });
+					res.write(JSON.stringify({ error: 'Invalid JSON in request body', message: error.message }));
+				} else {
+					res.writeHead(500, { 'Content-Type': 'application/json' });
+					res.write(JSON.stringify({ error: 'Internal server error', message: error.message }));
+				}
+				res.end();
+			}
 		}
 	});
 };
