@@ -139,7 +139,19 @@ async function getAuthenticatedUserId(catalystApp) {
 	try {
 		const userManagement = catalystApp.userManagement();
 		const currentUser = await userManagement.getCurrentUser();
-		return currentUser && currentUser.user_id ? String(currentUser.user_id) : null;
+
+		console.log('🔵 Current user object:', JSON.stringify(currentUser));
+
+		// Try multiple possible fields for user ID
+		const userId = currentUser?.user_id || currentUser?.id || currentUser?.zaaid || currentUser?.ROWID;
+
+		if (userId) {
+			console.log('🔵 Extracted user ID:', userId, 'Type:', typeof userId);
+			return String(userId);
+		}
+
+		console.log('⚠️ No user ID found in current user object');
+		return null;
 	} catch (error) {
 		console.log('No authenticated user:', error.message);
 		return null;
@@ -156,60 +168,82 @@ async function getAuthenticatedUserId(catalystApp) {
  */
 async function saveToDatastore(inputStyles, format, outputCode, userAgent = '', req) {
 	try {
+		console.log('🔵 Starting datastore save operation...');
+		console.log('🔵 Format:', format);
+		console.log('🔵 User Agent:', userAgent || 'Unknown');
+
 		// Lazy load SDK only when needed
 		const catalyst = require('zcatalyst-sdk-node');
+		console.log('🔵 Catalyst SDK loaded');
+
 		const catalystApp = catalyst.initialize(req);
-		const table = catalystApp.datastore().table('ConversionHistory');
+		console.log('🔵 Catalyst app initialized');
+
+		const datastore = catalystApp.datastore();
+		console.log('🔵 Datastore instance obtained');
+
+		const table = datastore.table('ConversionHistory');
+		console.log('🔵 Table reference obtained:', typeof table);
+		console.log('🔵 Table methods:', Object.keys(table));
 
 		// Get authenticated user ID (optional - works with or without auth)
 		const userId = await getAuthenticatedUserId(catalystApp);
+		console.log('🔵 User ID retrieved:', userId);
 
 		const rowData = {
 			format: format,
 			input_styles: JSON.stringify(inputStyles),
 			output_code: outputCode,
-			user_agent: userAgent || 'Unknown',
-			user_id: userId || '0' // '0' for anonymous/unauthenticated users
+			user_agent: userAgent || 'Unknown'
+			// Note: CREATORID is automatically set by Catalyst to the authenticated user's ID
 		};
 
-		// Try insertRow first (common API). If not available, try insertRows as fallback.
-		if (typeof table.insertRow === 'function') {
-			await table.insertRow(rowData);
-			console.log('✅ Conversion saved to datastore via insertRow');
-			return true;
-		} else if (typeof table.insertRows === 'function') {
-			await table.insertRows([rowData]);
-			console.log('✅ Conversion saved to datastore via insertRows');
-			return true;
-		} else if (typeof table.addRow === 'function') {
-			await table.addRow(rowData);
-			console.log('✅ Conversion saved to datastore via addRow');
-			return true;
-		} else {
-			// Last-resort: try calling createRow or insert as generic method names
-			if (typeof table.createRow === 'function') {
-				await table.createRow(rowData);
-				console.log('✅ Conversion saved to datastore via createRow');
-				return true;
-			}
-			console.log('⚠️ No recognized insert method on table object; available keys:', Object.keys(table));
-			return false;
-		}
-	} catch (error) {
-		// Don't throw - saving to datastore is optional
-		// Table might not exist yet, or other issues
-		console.error('ℹ️ Datastore save skipped, error details:');
-		if (error && error.message) console.error('message:', error.message);
-		if (error && error.stack) console.error(error.stack);
+		console.log('🔵 Row data prepared:', {
+			format: rowData.format,
+			input_styles_length: rowData.input_styles.length,
+			output_code_length: rowData.output_code.length,
+			user_agent: rowData.user_agent,
+			user_id: rowData.user_id
+		});
+
+		// Catalyst SDK uses a promise-based API with requester
+		// The table object has: _tableDetails, identifier, requester
+		console.log('🔵 Attempting to insert row using Catalyst SDK...');
+
+		// Check what methods are available on table
+		console.log('🔵 Table type:', typeof table);
+		console.log('🔵 Table.insertRows?', typeof table.insertRows);
+		console.log('🔵 All table methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(table)));
+
+		// Try to call insertRows
 		try {
-			// also log the table methods if catalyst init succeeded
-			const catalyst = require('zcatalyst-sdk-node');
-			const app = catalyst.initialize(req);
-			const tbl = app.datastore().table('ConversionHistory');
-			console.error('Table object keys:', Object.keys(tbl));
-		} catch (err2) {
-			console.error('error while inspecting table object:', err2 && err2.message);
+			console.log('🔵 Calling insertRows with data...');
+			const result = await table.insertRows([rowData]);
+			console.log('✅ insertRows completed:', JSON.stringify(result));
+			return true;
+		} catch (insertError) {
+			console.error('❌ insertRows failed:', typeof insertError, insertError);
+			throw insertError; // Re-throw to outer catch
 		}
+
+	} catch (error) {
+		// Log detailed error information
+		console.error('❌ Datastore save failed!');
+		console.error('❌ Error type:', typeof error);
+		console.error('❌ Error constructor:', error?.constructor?.name);
+		console.error('❌ Error as string:', String(error));
+		console.error('❌ Error message:', error?.message);
+		console.error('❌ Error code:', error?.code);
+		console.error('❌ Error stack:', error?.stack);
+
+		// Try to get more context about the error
+		if (error.response) {
+			console.error('❌ Error response:', JSON.stringify(error.response));
+		}
+		if (error.details) {
+			console.error('❌ Error details:', JSON.stringify(error.details));
+		}
+
 		return false;
 	}
 }

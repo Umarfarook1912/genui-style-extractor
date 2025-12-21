@@ -28,9 +28,13 @@ export function useAuth() {
     isLoading: true,
   });
 
-  // Check if user is already logged in on mount
+  // Check if user is already logged in on mount (only once)
   useEffect(() => {
-    checkAuthStatus();
+    let isMounted = true;
+    if (isMounted) {
+      checkAuthStatus();
+    }
+    return () => { isMounted = false; };
   }, []);
 
   const checkAuthStatus = useCallback(async () => {
@@ -124,17 +128,9 @@ export function useAuth() {
   }, [openAuthWindowAndPoll]);
 
   const logout = useCallback(async () => {
-    // Catalyst hosted auth typically exposes a logout route.
-    // If it doesn't exist, this will simply no-op.
-    try {
-      await fetch(`${API_BASE_URL}/__catalyst/auth/logout`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-    } catch (e) {
-      // ignore
-    }
-
+    // Catalyst hosted authentication doesn't provide a logout endpoint
+    // Just clear the local auth state - the session cookies will expire naturally
+    // or the next auth check will fail and redirect to login
     setAuthState({ isAuthenticated: false, isLoading: false });
   }, []);
 

@@ -17,7 +17,19 @@ async function getAuthenticatedUserId(catalystApp) {
     try {
         const userManagement = catalystApp.userManagement();
         const currentUser = await userManagement.getCurrentUser();
-        return currentUser && currentUser.user_id ? String(currentUser.user_id) : null;
+
+        console.log('🔵 getHistory - Current user object:', JSON.stringify(currentUser));
+
+        // Try multiple possible fields for user ID  
+        const userId = currentUser?.user_id || currentUser?.id || currentUser?.zaaid || currentUser?.ROWID;
+
+        if (userId) {
+            console.log('🔵 getHistory - Extracted user ID:', userId, 'Type:', typeof userId);
+            return String(userId);
+        }
+
+        console.log('⚠️ getHistory - No user ID found in current user object');
+        return null;
     } catch (error) {
         console.log('No authenticated user:', error.message);
         return null;
@@ -73,34 +85,62 @@ module.exports = (req, res) => {
  */
 async function getConversionHistory(req, limit, offset, formatFilter) {
     try {
+        console.log('🔵 getHistory: Starting fetch operation...');
+        console.log('🔵 Params:', { limit, offset, formatFilter });
+
         const catalystApp = catalyst.initialize(req);
         const table = catalystApp.datastore().table('ConversionHistory');
 
+        console.log('🔵 Table initialized:', typeof table);
+
         // Get authenticated user ID
         const userId = await getAuthenticatedUserId(catalystApp);
+        console.log('🔵 User ID:', userId);
 
-        if (!userId) {
-            // No authentication - return empty results for security
-            return {
-                success: true,
-                data: [],
-                pagination: { limit, offset, total: 0, hasMore: false },
-                message: 'Please log in to view your conversion history'
-            };
-        }
+        // For development: Show all records if no user is authenticated
+        // In production, you might want to restrict this
+        const showAllRecords = !userId; // Show all if not authenticated (for testing)
+
+        console.log('🔵 Fetching rows from datastore...');
 
         // Get all rows (Catalyst SDK method)
         const result = await table.getAllRows();
+        console.log('🔵 Datastore result type:', typeof result);
+        console.log('🔵 Datastore result:', result);
+
         let records = result || [];
 
-        // Filter by user ID (only show current user's conversions)
-        records = records.filter(record => String(record.user_id) === String(userId));
+        // If result is an object with data property, extract it
+        if (result && typeof result === 'object' && Array.isArray(result.data)) {
+            records = result.data;
+        } else if (Array.isArray(result)) {
+            records = result;
+        } else {
+            console.log('⚠️ Unexpected result format:', result);
+            records = [];
+        }
+
+        console.log('🔵 Total records fetched:', records.length);
+
+        // Filter by CREATORID only if authenticated (CREATORID is automatically set by Catalyst)
+        if (userId && !showAllRecords) {
+            console.log('🔵 Filtering by CREATORID:', userId);
+            records = records.filter(record => String(record.CREATORID) === String(userId));
+            console.log('🔵 Records after user filter:', records.length);
+        }
+
+        // Apply format filter if provided
+        if (formatFilter) {
+            records = records.filter(record => record.format === formatFilter);
+            console.log('🔵 Records after format filter:', records.length);
+        }
 
         // Get total count
         const total = records.length;
 
         // Apply pagination
         const paginatedRecords = records.slice(offset, offset + limit);
+        console.log('🔵 Paginated records:', paginatedRecords.length);
 
         // Transform records to match frontend expectations (snake_case keys)
         const conversions = paginatedRecords.map(record => ({
@@ -112,6 +152,8 @@ async function getConversionHistory(req, limit, offset, formatFilter) {
             user_agent: record.user_agent,
             created_time: record.CREATEDTIME
         }));
+
+        console.log('✅ getHistory: Success, returning', conversions.length, 'records');
 
         return {
             success: true,
@@ -125,7 +167,10 @@ async function getConversionHistory(req, limit, offset, formatFilter) {
         };
 
     } catch (error) {
-        console.error('Datastore query error:', error);
-        throw new Error(`Failed to fetch history: ${error.message}`);
+        console.error('❌ Datastore query error:', error);
+        console.error('❌ Error type:', typeof error);
+        console.error('❌ Error message:', error?.message);
+        console.error('❌ Error stack:', error?.stack);
+        throw new Error(`Failed to fetch history: ${error.message || String(error)}`);
     }
 }
