@@ -1,0 +1,15 @@
+{
+  "name": "GenUI Extractor",
+  "id": "com.genui.extractor",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": [
+      "https://genui-backend-908193831.development.catalystserverless.com",
+      "https://*.catalystserverless.com"
+    ]
+  }
+}
+

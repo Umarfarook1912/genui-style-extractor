@@ -1,0 +1,11 @@
+{
+  "name": "analyze-image",
+  "version": "1.0.0",
+  "description": "Analyzes UI design images and extracts design tokens",
+  "main": "index.js",
+  "scripts": {},
+  "dependencies": {
+    "zcatalyst-sdk-node": "^2.0.0"
+  }
+}
+

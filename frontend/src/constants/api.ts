@@ -21,3 +21,11 @@ export const DEV_ENDPOINT = "https://genui-backend-908193831.development.catalys
  * Base URL for all API endpoints
  */
 export const API_BASE_URL = "https://genui-backend-908193831.development.catalystserverless.com";
+
+/**
+ * Catalyst backend endpoint for image analysis
+ * Analyzes UI design images and extracts design tokens
+ */
+export const CATALYST_ANALYZE_IMAGE_URL =
+    import.meta.env.VITE_CATALYST_ANALYZE_IMAGE_ENDPOINT ||
+    `${API_BASE_URL}/server/analyzeImage/`;

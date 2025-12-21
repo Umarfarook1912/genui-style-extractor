@@ -8,10 +8,14 @@ import { Button } from "./Button";
 import { Card } from "./Card";
 import { CodeBlock } from "./CodeBlock";
 import { Loader } from "./Loader";
+import { ImageUpload } from "./ImageUpload";
 import { useConvertStyles } from "../hooks/useConvertStyles";
+import { useImageAnalysis } from "../hooks/useImageAnalysis";
+import type { DesignJson } from "../hooks/useImageAnalysis";
 
 type Styles = Record<string, string>;
 type OutputFormat = "css" | "tailwind" | "jsx";
+type InputMode = "extract" | "upload";
 
 interface AppContentProps {
   onLogout: () => void;
@@ -20,10 +24,13 @@ interface AppContentProps {
 
 export function AppContent({ onLogout, userEmail }: AppContentProps) {
   // State management
+  const [inputMode, setInputMode] = useState<InputMode>("extract");
   const [styles, setStyles] = useState<Styles | null>(null);
+  const [designJson, setDesignJson] = useState<DesignJson | null>(null);
   const [format, setFormat] = useState<OutputFormat>("tailwind");
   const [useRem, setUseRem] = useState(true);
   const [extracting, setExtracting] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [persistentWindow, setPersistentWindow] = useState<boolean>(() => {
     try {
       const v = localStorage.getItem('genui_persistent_window');
@@ -33,8 +40,9 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
     }
   });
 
-  // React Query mutation for style conversion
+  // React Query mutations
   const { mutate: convertStyles, data, isPending, isError, error } = useConvertStyles();
+  const { mutate: analyzeImage, data: analysisData, isPending: isAnalyzing, isError: isAnalysisError, error: analysisError } = useImageAnalysis();
 
   // Listen for messages from Chrome extension or dev harness
   useEffect(() => {
@@ -191,9 +199,60 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
     }
   };
 
+  // Handle image selection
+  const handleImageSelect = (file: File) => {
+    setStyles(null);
+    setDesignJson(null);
+    
+    // Create preview URL
+    const preview = URL.createObjectURL(file);
+    setImagePreview(preview);
+    
+    // Analyze the image
+    analyzeImage({ imageFile: file });
+  };
+
+  // Handle successful image analysis
+  useEffect(() => {
+    if (analysisData?.success && analysisData.designJson) {
+      setDesignJson(analysisData.designJson);
+      // Convert design.json to styles format for compatibility
+      const stylesFromJson: Styles = {};
+      Object.entries(analysisData.designJson).forEach(([key, value]) => {
+        stylesFromJson[key] = String(value);
+      });
+      setStyles(stylesFromJson);
+    }
+  }, [analysisData]);
+
+  // Cleanup preview URL
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
   const handleConvert = () => {
     if (!styles) return;
     convertStyles({ styles, format, useRem });
+  };
+
+  // Download design.json
+  const handleDownloadDesignJson = () => {
+    if (!designJson) return;
+    
+    const jsonStr = JSON.stringify(designJson, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'design.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const output = data?.code || data?.output || "";
@@ -226,50 +285,151 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
 
       {/* Main Content */}
       <div className="content">
-        {!styles && !extracting && (
-          <Card className="welcome">
-            <p>Select an element from any webpage to extract its styles</p>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexDirection: 'column' }}>
-              <label style={{ fontSize: 13 }}>
-                <input
-                  type="checkbox"
-                  checked={persistentWindow}
-                  onChange={(e) => {
-                    const v = !!e.target.checked;
-                    setPersistentWindow(v);
-                    try { localStorage.setItem('genui_persistent_window', v ? '1' : '0'); } catch (err) { }
+        {!styles && !extracting && !isAnalyzing && (
+          <>
+            {/* Input Mode Selector */}
+            <Card className="mode-selector">
+              <div style={{ 
+                display: 'flex', 
+                gap: '8px', 
+                marginBottom: '16px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                padding: '4px',
+                backgroundColor: '#f9fafb'
+              }}>
+                <button
+                  onClick={() => {
+                    setInputMode('extract');
+                    setStyles(null);
+                    setDesignJson(null);
+                    if (imagePreview) {
+                      URL.revokeObjectURL(imagePreview);
+                      setImagePreview(null);
+                    }
                   }}
-                />{' '}
-                Open persistent window for extraction
-              </label>
-              <Button onClick={startExtraction} variant="primary">
-                🎯 Start Extraction
-              </Button>
-            </div>
-          </Card>
+                  style={{
+                    flex: 1,
+                    padding: '10px 16px',
+                    background: inputMode === 'extract' 
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                      : 'transparent',
+                    color: inputMode === 'extract' ? 'white' : '#666',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  🎯 Extract from Web
+                </button>
+                <button
+                  onClick={() => {
+                    setInputMode('upload');
+                    setStyles(null);
+                    setDesignJson(null);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '10px 16px',
+                    background: inputMode === 'upload' 
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                      : 'transparent',
+                    color: inputMode === 'upload' ? 'white' : '#666',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  📸 Upload Image
+                </button>
+              </div>
+
+              {inputMode === 'extract' ? (
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexDirection: 'column' }}>
+                  <p style={{ marginBottom: '8px' }}>Select an element from any webpage to extract its styles</p>
+                  <label style={{ fontSize: 13 }}>
+                    <input
+                      type="checkbox"
+                      checked={persistentWindow}
+                      onChange={(e) => {
+                        const v = !!e.target.checked;
+                        setPersistentWindow(v);
+                        try { localStorage.setItem('genui_persistent_window', v ? '1' : '0'); } catch (err) { }
+                      }}
+                    />{' '}
+                    Open persistent window for extraction
+                  </label>
+                  <Button onClick={startExtraction} variant="primary">
+                    🎯 Start Extraction
+                  </Button>
+                </div>
+              ) : (
+                <ImageUpload
+                  onImageSelect={handleImageSelect}
+                  isProcessing={isAnalyzing}
+                  previewUrl={imagePreview}
+                />
+              )}
+            </Card>
+          </>
         )}
 
-        {extracting && (
+        {(extracting || isAnalyzing) && (
           <div className="extracting">
-            <Loader text="Click on any element on the webpage..." />
-            <p style={{ fontSize: 12, color: '#666', marginTop: 8 }}>
-              Tip: The popup will close while you click the page. Re-open the extension to see results.
-            </p>
+            <Loader text={extracting ? "Click on any element on the webpage..." : "Analyzing image and extracting design tokens..."} />
+            {extracting && (
+              <p style={{ fontSize: 12, color: '#666', marginTop: 8 }}>
+                Tip: The popup will close while you click the page. Re-open the extension to see results.
+              </p>
+            )}
           </div>
+        )}
+
+        {isAnalysisError && (
+          <Card className="error-message">
+            <p style={{ color: "#ef4444" }}>
+              ❌ Error: {analysisError?.message || "Failed to analyze image"}
+            </p>
+            <p style={{ fontSize: "0.9rem", marginTop: "8px" }}>
+              Make sure the analyzeImage Catalyst function is deployed and configured correctly.
+            </p>
+          </Card>
         )}
 
         {styles && (
           <>
-            <Card className="element-info">
-              <h3>
-                📦 Element: <code>{styles.tagName || "Unknown"}</code>
-              </h3>
-              {styles.className && (
-                <p className="class-name">
-                  Class: <code>{styles.className}</code>
-                </p>
-              )}
-            </Card>
+            {inputMode === 'upload' && designJson && (
+              <Card title="📄 Design JSON" className="design-json-section">
+                <div style={{ marginBottom: '12px' }}>
+                  <p style={{ fontSize: '14px', color: '#666', marginBottom: '12px' }}>
+                    Design tokens extracted from your image:
+                  </p>
+                  <CodeBlock code={JSON.stringify(designJson, null, 2)} language="json" />
+                </div>
+                <Button onClick={handleDownloadDesignJson} variant="secondary" style={{ marginTop: '8px' }}>
+                  💾 Download design.json
+                </Button>
+              </Card>
+            )}
+
+            {inputMode === 'extract' && (
+              <Card className="element-info">
+                <h3>
+                  📦 Element: <code>{styles.tagName || "Unknown"}</code>
+                </h3>
+                {styles.className && (
+                  <p className="class-name">
+                    Class: <code>{styles.className}</code>
+                  </p>
+                )}
+              </Card>
+            )}
 
             <Card title="Extracted Styles" className="styles-preview">
               <div className="styles-grid">
@@ -382,9 +542,28 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
               </Card>
             )}
 
-            <Button onClick={startExtraction} variant="secondary" className="mt-16">
-              🔄 Extract Another Element
-            </Button>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+              {inputMode === 'extract' ? (
+                <Button onClick={startExtraction} variant="secondary" style={{ flex: 1 }}>
+                  🔄 Extract Another Element
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => {
+                    setStyles(null);
+                    setDesignJson(null);
+                    if (imagePreview) {
+                      URL.revokeObjectURL(imagePreview);
+                      setImagePreview(null);
+                    }
+                  }} 
+                  variant="secondary" 
+                  style={{ flex: 1 }}
+                >
+                  🔄 Upload Another Image
+                </Button>
+              )}
+            </div>
           </>
         )}
       </div>
