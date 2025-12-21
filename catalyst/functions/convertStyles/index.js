@@ -368,7 +368,7 @@ module.exports = (req, res) => {
 				return;
 			}
 
-			// Send successful response
+			// Send successful response (without saving to datastore)
 			if (!responded) {
 				responded = true;
 				res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -376,11 +376,8 @@ module.exports = (req, res) => {
 				res.end();
 			}
 
-			// Save to Datastore asynchronously without blocking the response
-			setImmediate(() => {
-				saveToDatastore(styles, format, convertedCode, req.headers['user-agent'], req)
-					.catch(err => console.log('Datastore save failed (non-critical):', err && err.message));
-			});
+			// Note: Datastore save is now handled by separate saveConversion endpoint
+			// User must click "Save" button to persist the conversion
 
 		} catch (error) {
 			console.error('Error in convertStyles function:', error && (error.stack || error.message));

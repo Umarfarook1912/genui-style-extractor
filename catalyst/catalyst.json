@@ -5,7 +5,8 @@
     "targets": [
       "convertStyles",
       "getHistory",
-      "analyzeImage"
+      "analyzeImage",
+      "saveConversion"
     ],
     "ignore": [],
     "source": "functions"

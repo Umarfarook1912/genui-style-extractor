@@ -11,6 +11,7 @@ import { Loader } from "./Loader";
 import { ImageUpload } from "./ImageUpload";
 import { useConvertStyles } from "../hooks/useConvertStyles";
 import { useImageAnalysis } from "../hooks/useImageAnalysis";
+import { CATALYST_SAVE_CONVERSION_URL } from "../constants/api";
 import type { DesignJson } from "../hooks/useImageAnalysis";
 
 type Styles = Record<string, string>;
@@ -39,6 +40,8 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
       return false;
     }
   });
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   // React Query mutations
   const { mutate: convertStyles, data, isPending, isError, error } = useConvertStyles();
@@ -203,11 +206,11 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
   const handleImageSelect = (file: File) => {
     setStyles(null);
     setDesignJson(null);
-    
+
     // Create preview URL
     const preview = URL.createObjectURL(file);
     setImagePreview(preview);
-    
+
     // Analyze the image
     analyzeImage({ imageFile: file });
   };
@@ -236,13 +239,46 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
 
   const handleConvert = () => {
     if (!styles) return;
+    setIsSaved(false);
     convertStyles({ styles, format, useRem });
+  };
+
+  // Save conversion to datastore
+  const handleSaveConversion = async () => {
+    if (!styles || !output) return;
+
+    setIsSaving(true);
+    try {
+      const response = await fetch(CATALYST_SAVE_CONVERSION_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          styles,
+          format,
+          output_code: output,
+          user_agent: navigator.userAgent
+        })
+      });
+
+      if (response.ok) {
+        setIsSaved(true);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to save conversion');
+      }
+    } catch (err) {
+      console.error('Save failed:', err);
+      alert(`Failed to save conversion: ${(err as Error).message}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Download design.json
   const handleDownloadDesignJson = () => {
     if (!designJson) return;
-    
+
     const jsonStr = JSON.stringify(designJson, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -289,9 +325,9 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
           <>
             {/* Input Mode Selector */}
             <Card className="mode-selector">
-              <div style={{ 
-                display: 'flex', 
-                gap: '8px', 
+              <div style={{
+                display: 'flex',
+                gap: '8px',
                 marginBottom: '16px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
@@ -311,8 +347,8 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
                   style={{
                     flex: 1,
                     padding: '10px 16px',
-                    background: inputMode === 'extract' 
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                    background: inputMode === 'extract'
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                       : 'transparent',
                     color: inputMode === 'extract' ? 'white' : '#666',
                     border: 'none',
@@ -334,8 +370,8 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
                   style={{
                     flex: 1,
                     padding: '10px 16px',
-                    background: inputMode === 'upload' 
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                    background: inputMode === 'upload'
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                       : 'transparent',
                     color: inputMode === 'upload' ? 'white' : '#666',
                     border: 'none',
@@ -537,9 +573,26 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
             )}
 
             {output && (
-              <Card title="Generated Code" className="output-section">
-                <CodeBlock code={output} language={format} />
-              </Card>
+              <>
+                <Card title="Generated Code" className="output-section">
+                  <CodeBlock code={output} language={format} />
+                  <div style={{ marginTop: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <Button
+                      onClick={handleSaveConversion}
+                      disabled={isSaving || isSaved}
+                      variant={isSaved ? "secondary" : "primary"}
+                      style={{ minWidth: '140px' }}
+                    >
+                      {isSaving ? "💾 Saving..." : isSaved ? "✅ Saved" : "💾 Save to History"}
+                    </Button>
+                    {isSaved && (
+                      <span style={{ color: '#10b981', fontSize: '14px' }}>
+                        Saved successfully!
+                      </span>
+                    )}
+                  </div>
+                </Card>
+              </>
             )}
 
             <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
@@ -548,7 +601,7 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
                   🔄 Extract Another Element
                 </Button>
               ) : (
-                <Button 
+                <Button
                   onClick={() => {
                     setStyles(null);
                     setDesignJson(null);
@@ -556,8 +609,8 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
                       URL.revokeObjectURL(imagePreview);
                       setImagePreview(null);
                     }
-                  }} 
-                  variant="secondary" 
+                  }}
+                  variant="secondary"
                   style={{ flex: 1 }}
                 >
                   🔄 Upload Another Image

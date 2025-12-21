@@ -29,3 +29,8 @@ export const API_BASE_URL = "https://genui-backend-908193831.development.catalys
 export const CATALYST_ANALYZE_IMAGE_URL =
     import.meta.env.VITE_CATALYST_ANALYZE_IMAGE_ENDPOINT ||
     `${API_BASE_URL}/server/analyzeImage/`;
+
+/**
+ * Catalyst backend endpoint for saving conversions to datastore
+ */
+export const CATALYST_SAVE_CONVERSION_URL = `${API_BASE_URL}/server/saveConversion/`;
