@@ -11,7 +11,6 @@
    - Click on **Settings** or **Environment Variables**
    - Add a new environment variable:
      - **Key:** `OPENAI_API_KEY`
-     - **Value:** `YOUR_OPENAI_API_KEY_HERE`
    - Save the changes
 
 3. **Redeploy the Function:**
@@ -26,7 +25,7 @@
 If your Catalyst CLI version supports it:
 ```bash
 cd catalyst
-catalyst env:set OPENAI_API_KEY="YOUR_OPENAI_API_KEY_HERE"
+catalyst env:set OPENAI_API_KEY=""
 ```
 
 ## Local Testing
@@ -35,7 +34,7 @@ For local testing, you can create a `.env` file (but **NEVER commit it to git**)
 
 ```bash
 # In catalyst/functions/analyzeImage/
-echo "OPENAI_API_KEY=YOUR_OPENAI_API_KEY_HERE" > .env
+echo "" > .env
 ```
 
 Then load it in your local test server (you'll need to modify `local_test_server.js` to load dotenv).

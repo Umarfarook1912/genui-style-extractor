@@ -33,7 +33,7 @@ For local testing, create a `.env` file in `catalyst/functions/analyzeImage/`:
 
 ```bash
 cd catalyst/functions/analyzeImage
-echo "OPENAI_API_KEY=YOUR_OPENAI_API_KEY_HERE" > .env
+echo "" > .env
 ```
 
 Then run the local test server:
@@ -43,7 +43,7 @@ node local_test_server.js
 
 Or pass the key as an argument:
 ```bash
-node local_test_server.js "YOUR_OPENAI_API_KEY_HERE"
+node local_test_server.js ""
 ```
 
 ## ✅ Verification
