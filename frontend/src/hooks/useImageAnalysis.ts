@@ -7,9 +7,58 @@
 import { useMutation } from "@tanstack/react-query";
 import { CATALYST_ANALYZE_IMAGE_URL } from "../constants/api";
 
-// Type definitions
+// Type definitions - Structured design.json format
 export interface DesignJson {
-  [key: string]: string | number;
+  meta?: {
+    source: string;
+    confidence: string;
+    device: string;
+    screenType: string;
+  };
+  colors?: {
+    background?: string;
+    primary?: string;
+    icon?: string;
+    textPrimary?: string;
+    textSecondary?: string;
+    accent?: string;
+  };
+  layout?: {
+    container?: {
+      width?: number;
+      height?: number;
+      padding?: {
+        top?: number;
+        right?: number;
+        bottom?: number;
+        left?: number;
+      };
+      direction?: string;
+      alignItems?: string;
+      justifyContent?: string;
+      gap?: number;
+      backgroundColor?: string;
+    };
+  };
+  components?: Array<{
+    id?: string;
+    type?: string;
+    position?: string;
+    size?: {
+      width?: number;
+      height?: number;
+    };
+    styles?: {
+      [key: string]: any;
+    };
+    children?: Array<any>;
+  }>;
+  typography?: {
+    fontFamily?: string;
+    baseFontSize?: number;
+  };
+  // Allow additional properties for flexibility
+  [key: string]: any;
 }
 
 interface ImageAnalysisParams {

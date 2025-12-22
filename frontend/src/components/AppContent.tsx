@@ -219,11 +219,48 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
   useEffect(() => {
     if (analysisData?.success && analysisData.designJson) {
       setDesignJson(analysisData.designJson);
-      // Convert design.json to styles format for compatibility
+      
+      // Extract styles from the structured design.json for conversion compatibility
+      // Use the container layout as the base styles
+      const container = analysisData.designJson.layout?.container;
+      const colors = analysisData.designJson.colors;
+      const typography = analysisData.designJson.typography;
+      
       const stylesFromJson: Styles = {};
-      Object.entries(analysisData.designJson).forEach(([key, value]) => {
-        stylesFromJson[key] = String(value);
-      });
+      
+      // Extract from container
+      if (container) {
+        if (container.width) stylesFromJson.width = `${container.width}px`;
+        if (container.height) stylesFromJson.height = `${container.height}px`;
+        if (container.backgroundColor) stylesFromJson.backgroundColor = container.backgroundColor;
+        if (container.gap) stylesFromJson.gap = `${container.gap}px`;
+        if (container.direction) {
+          stylesFromJson.flexDirection = container.direction === 'column' ? 'column' : 'row';
+          stylesFromJson.display = 'flex';
+        }
+        if (container.alignItems) stylesFromJson.alignItems = container.alignItems;
+        if (container.justifyContent) stylesFromJson.justifyContent = container.justifyContent;
+        if (container.padding) {
+          const p = container.padding;
+          if (p.top !== undefined) stylesFromJson.paddingTop = `${p.top}px`;
+          if (p.right !== undefined) stylesFromJson.paddingRight = `${p.right}px`;
+          if (p.bottom !== undefined) stylesFromJson.paddingBottom = `${p.bottom}px`;
+          if (p.left !== undefined) stylesFromJson.paddingLeft = `${p.left}px`;
+        }
+      }
+      
+      // Extract from colors
+      if (colors) {
+        if (colors.background) stylesFromJson.backgroundColor = colors.background;
+        if (colors.textPrimary) stylesFromJson.color = colors.textPrimary;
+      }
+      
+      // Extract from typography
+      if (typography) {
+        if (typography.baseFontSize) stylesFromJson.fontSize = `${typography.baseFontSize}px`;
+        if (typography.fontFamily) stylesFromJson.fontFamily = typography.fontFamily;
+      }
+      
       setStyles(stylesFromJson);
     }
   }, [analysisData]);

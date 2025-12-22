@@ -40,7 +40,7 @@ Visit http://localhost:5173 to see the UI!
 
 ## ✨ What is GenUI?
 
-GenUI is a smart browser extension that bridges the gap between design and development. Select any element on a webpage and instantly convert it into:
+GenUI is a smart design-to-code tool that bridges the gap between design and development. Extract styles from **web pages** (Chrome extension) or **Figma designs** (Figma plugin) and instantly convert them into:
 
 - 🎨 **Clean CSS** with optional px → rem conversion
 - ⚡ **Tailwind Classes** with smart utility mapping
@@ -66,7 +66,8 @@ Perfect for developers who want to:
 ## 🎯 Features
 
 ### Core Features
-- ✅ Click to select any webpage element
+- ✅ **Browser Extension**: Click to select any webpage element
+- ✅ **Figma Plugin**: Extract styles directly from Figma designs
 - ✅ Extract 30+ CSS properties automatically
 - ✅ Convert to CSS, Tailwind, or JSX format
 - ✅ Visual overlay highlights selected elements
@@ -132,9 +133,15 @@ genui-style-extractor/
 │   ├── content-script.js   # Style extraction
 │   └── background.js       # Message handling
 │
+├── 🎨 figma-plugin/         # Figma plugin
+│   ├── manifest.json       # Plugin config
+│   ├── code.ts            # Plugin logic
+│   └── ui.html            # Plugin UI
+│
 ├── ☁️ catalyst/             # Backend functions
 │   └── functions/
-│       └── convertStyles/
+│       ├── convertStyles/  # Style conversion
+│       └── getHistory/     # Conversion history
 │
 └── 📦 sigma-package/        # Deployment package
 ```
@@ -268,7 +275,7 @@ For detailed instructions, see [BUILD_GUIDE.md](./BUILD_GUIDE.md)
 - [ ] Screenshot upload support
 - [ ] Multiple element selection
 - [ ] Component library export
-- [ ] Figma integration
+- [x] Figma integration ✅ **COMPLETE!**
 - [ ] VS Code extension
 
 ---
