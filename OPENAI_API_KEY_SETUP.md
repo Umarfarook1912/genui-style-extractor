@@ -1,6 +1,11 @@
 # 🔑 OpenAI API Key Setup
 
 ## Your API Key
+
+**⚠️ Get your API key from:** https://platform.openai.com/api-keys
+
+Replace `YOUR_OPENAI_API_KEY_HERE` below with your actual key.
+
 ```
 YOUR_OPENAI_API_KEY_HERE
 ```
@@ -33,7 +38,7 @@ For local testing, create a `.env` file in `catalyst/functions/analyzeImage/`:
 
 ```bash
 cd catalyst/functions/analyzeImage
-echo "" > .env
+echo "OPENAI_API_KEY=YOUR_OPENAI_API_KEY_HERE" > .env
 ```
 
 Then run the local test server:
@@ -43,7 +48,7 @@ node local_test_server.js
 
 Or pass the key as an argument:
 ```bash
-node local_test_server.js ""
+node local_test_server.js "YOUR_OPENAI_API_KEY_HERE"
 ```
 
 ## ✅ Verification

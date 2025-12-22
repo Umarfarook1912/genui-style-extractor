@@ -30,10 +30,8 @@ Getting "rate limit exceeded" errors even with a new API key.
 2. **Check Environment Variables:**
    - Go to: **Functions** → **analyzeImage**
    - Look for **Environment Variables** section
-   - Verify `OPENAI_API_KEY` is set with the new key:
-     ```
-     YOUR_OPENAI_API_KEY_HERE
-     ```
+   - Verify `OPENAI_API_KEY` is set with your API key
+   - Get your key from: https://platform.openai.com/api-keys
 
 3. **If Not Set:**
    - Click **Add Environment Variable**
