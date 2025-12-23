@@ -16,7 +16,7 @@ import type { DesignJson } from "../hooks/useImageAnalysis";
 
 type Styles = Record<string, string>;
 type OutputFormat = "css" | "tailwind" | "jsx";
-type InputMode = "extract" | "upload";
+type InputMode = "extract" | "upload" | "figma";
 
 interface AppContentProps {
   onLogout: () => void;
@@ -219,15 +219,15 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
   useEffect(() => {
     if (analysisData?.success && analysisData.designJson) {
       setDesignJson(analysisData.designJson);
-      
+
       // Extract styles from the structured design.json for conversion compatibility
       // Use the container layout as the base styles
       const container = analysisData.designJson.layout?.container;
       const colors = analysisData.designJson.colors;
       const typography = analysisData.designJson.typography;
-      
+
       const stylesFromJson: Styles = {};
-      
+
       // Extract from container
       if (container) {
         if (container.width) stylesFromJson.width = `${container.width}px`;
@@ -248,19 +248,19 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
           if (p.left !== undefined) stylesFromJson.paddingLeft = `${p.left}px`;
         }
       }
-      
+
       // Extract from colors
       if (colors) {
         if (colors.background) stylesFromJson.backgroundColor = colors.background;
         if (colors.textPrimary) stylesFromJson.color = colors.textPrimary;
       }
-      
+
       // Extract from typography
       if (typography) {
         if (typography.baseFontSize) stylesFromJson.fontSize = `${typography.baseFontSize}px`;
         if (typography.fontFamily) stylesFromJson.fontFamily = typography.fontFamily;
       }
-      
+
       setStyles(stylesFromJson);
     }
   }, [analysisData]);
@@ -421,6 +421,33 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
                 >
                   📸 Upload Image
                 </button>
+                <button
+                  onClick={() => {
+                    setInputMode('figma');
+                    setStyles(null);
+                    setDesignJson(null);
+                    if (imagePreview) {
+                      URL.revokeObjectURL(imagePreview);
+                      setImagePreview(null);
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '10px 16px',
+                    background: inputMode === 'figma'
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      : 'transparent',
+                    color: inputMode === 'figma' ? 'white' : '#666',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  🎨 Figma Plugin
+                </button>
               </div>
 
               {inputMode === 'extract' ? (
@@ -442,12 +469,128 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
                     🎯 Start Extraction
                   </Button>
                 </div>
-              ) : (
+              ) : inputMode === 'upload' ? (
                 <ImageUpload
                   onImageSelect={handleImageSelect}
                   isProcessing={isAnalyzing}
                   previewUrl={imagePreview}
                 />
+              ) : (
+                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                  <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>🎨 Figma Plugin</h3>
+                  <p style={{ marginBottom: '16px', color: '#666', lineHeight: '1.6' }}>
+                    Extract design styles directly from Figma using our plugin
+                  </p>
+                  <div style={{
+                    background: '#f9fafb',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    marginBottom: '16px',
+                    textAlign: 'left'
+                  }}>
+                    <strong style={{ display: 'block', marginBottom: '8px' }}>Setup Instructions:</strong>
+                    <ol style={{ fontSize: '14px', lineHeight: '1.8', paddingLeft: '20px' }}>
+                      <li>Open Figma Desktop or Web App</li>
+                      <li>Go to <strong>Plugins → Development → Import plugin from manifest</strong></li>
+                      <li>Navigate to: <code style={{
+                        background: '#fff',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontSize: '12px'
+                      }}>figma-plugin/dist/manifest.json</code></li>
+                      <li>Select your design layers in Figma</li>
+                      <li>Run the plugin and click "Extract Styles"</li>
+                      <li>Copy the JSON and paste it here</li>
+                    </ol>
+                  </div>
+                  <div style={{ marginBottom: '16px' }}>
+                    <textarea
+                      placeholder='Paste your Figma JSON here...\n\nExample:\n{\n  "source": "figma",\n  "nodes": [...]\n}'
+                      style={{
+                        width: '100%',
+                        minHeight: '120px',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        fontFamily: 'monospace',
+                        fontSize: '13px',
+                        resize: 'vertical'
+                      }}
+                      id="figmaJsonInput"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => {
+                      const textarea = document.getElementById('figmaJsonInput') as HTMLTextAreaElement;
+                      const jsonText = textarea?.value.trim();
+
+                      if (!jsonText) {
+                        alert('Please paste Figma JSON first');
+                        return;
+                      }
+
+                      try {
+                        const figmaData = JSON.parse(jsonText);
+
+                        if (!figmaData.source || figmaData.source !== 'figma' || !figmaData.nodes) {
+                          throw new Error('Invalid Figma JSON structure');
+                        }
+
+                        // Convert Figma JSON to styles format
+                        const firstNode = figmaData.nodes[0];
+                        const stylesFromFigma: Styles = {
+                          tagName: firstNode.nodeType,
+                          className: firstNode.name
+                        };
+
+                        // Extract layout
+                        if (firstNode.layout) {
+                          if (firstNode.layout.width) stylesFromFigma.width = `${firstNode.layout.width}px`;
+                          if (firstNode.layout.height) stylesFromFigma.height = `${firstNode.layout.height}px`;
+                        }
+
+                        // Extract colors
+                        if (firstNode.colors?.fills?.[0]) {
+                          stylesFromFigma.backgroundColor = firstNode.colors.fills[0];
+                        }
+                        if (firstNode.colors?.strokes?.[0]) {
+                          stylesFromFigma.borderColor = firstNode.colors.strokes[0];
+                        }
+
+                        // Extract typography
+                        if (firstNode.typography) {
+                          if (firstNode.typography.fontSize) stylesFromFigma.fontSize = `${firstNode.typography.fontSize}px`;
+                          if (firstNode.typography.fontFamily) stylesFromFigma.fontFamily = firstNode.typography.fontFamily;
+                          if (firstNode.typography.fontWeight) stylesFromFigma.fontWeight = String(firstNode.typography.fontWeight);
+                          if (firstNode.typography.lineHeight) stylesFromFigma.lineHeight = String(firstNode.typography.lineHeight);
+                        }
+
+                        // Extract spacing
+                        if (firstNode.spacing) {
+                          if (firstNode.spacing.paddingTop) stylesFromFigma.paddingTop = `${firstNode.spacing.paddingTop}px`;
+                          if (firstNode.spacing.paddingRight) stylesFromFigma.paddingRight = `${firstNode.spacing.paddingRight}px`;
+                          if (firstNode.spacing.paddingBottom) stylesFromFigma.paddingBottom = `${firstNode.spacing.paddingBottom}px`;
+                          if (firstNode.spacing.paddingLeft) stylesFromFigma.paddingLeft = `${firstNode.spacing.paddingLeft}px`;
+                          if (firstNode.spacing.borderRadius) stylesFromFigma.borderRadius = `${firstNode.spacing.borderRadius}px`;
+                        }
+
+                        // Store the full design JSON
+                        setDesignJson(figmaData);
+                        setStyles(stylesFromFigma);
+
+                      } catch (error) {
+                        alert(`Invalid JSON: ${(error as Error).message}`);
+                      }
+                    }}
+                    variant="primary"
+                  >
+                    ✨ Parse Figma JSON
+                  </Button>
+                  <p style={{ marginTop: '12px', fontSize: '12px', color: '#888' }}>
+                    Need help? Check the <strong>figma-plugin/README.md</strong> for detailed instructions
+                  </p>
+                </div>
               )}
             </Card>
           </>
@@ -477,11 +620,13 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
 
         {styles && (
           <>
-            {inputMode === 'upload' && designJson && (
-              <Card title="📄 Design JSON" className="design-json-section">
+            {(inputMode === 'upload' || inputMode === 'figma') && designJson && (
+              <Card title={inputMode === 'figma' ? "📄 Figma Design JSON" : "📄 Design JSON"} className="design-json-section">
                 <div style={{ marginBottom: '12px' }}>
                   <p style={{ fontSize: '14px', color: '#666', marginBottom: '12px' }}>
-                    Design tokens extracted from your image:
+                    {inputMode === 'figma'
+                      ? 'Design tokens extracted from Figma:'
+                      : 'Design tokens extracted from your image:'}
                   </p>
                   <CodeBlock code={JSON.stringify(designJson, null, 2)} language="json" />
                 </div>
@@ -637,7 +782,7 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
                 <Button onClick={startExtraction} variant="secondary" style={{ flex: 1 }}>
                   🔄 Extract Another Element
                 </Button>
-              ) : (
+              ) : inputMode === 'upload' ? (
                 <Button
                   onClick={() => {
                     setStyles(null);
@@ -651,6 +796,19 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
                   style={{ flex: 1 }}
                 >
                   🔄 Upload Another Image
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => {
+                    setStyles(null);
+                    setDesignJson(null);
+                    const textarea = document.getElementById('figmaJsonInput') as HTMLTextAreaElement;
+                    if (textarea) textarea.value = '';
+                  }}
+                  variant="secondary"
+                  style={{ flex: 1 }}
+                >
+                  🔄 Parse Another Figma JSON
                 </Button>
               )}
             </div>

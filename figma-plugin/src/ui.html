@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>GenUI Style Extractor</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .instructions {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #555;
+    }
+
+    .instructions ol {
+      margin: 8px 0 0 20px;
+    }
+
+    .instructions li {
+      margin: 4px 0;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .primary-btn:hover {
+      background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+    }
+
+    .primary-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .secondary-btn {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+    }
+
+    .secondary-btn:hover {
+      background: #f0f2ff;
+    }
+
+    .secondary-btn:disabled {
+      border-color: #ccc;
+      color: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .output-section {
+      display: none;
+    }
+
+    .output-section.visible {
+      display: block;
+    }
+
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .output-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .stats {
+      font-size: 12px;
+      color: #888;
+      background: #f0f0f0;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .json-output {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      max-height: 200px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin-bottom: 12px;
+    }
+
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .error-message.visible {
+      display: block;
+    }
+
+    .success-message {
+      background: #efe;
+      color: #393;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .success-message.visible {
+      display: block;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #f0f0f0;
+      font-size: 12px;
+      color: #888;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #667eea;
+      font-size: 14px;
+    }
+
+    .loading.visible {
+      display: block;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">G</div>
+      <h1>GenUI Style Extractor</h1>
+    </div>
+
+    <div class="instructions">
+      <strong>How to use:</strong>
+      <ol>
+        <li>Select one or more layers in Figma (Frame, Rectangle, Text, Component, etc.)</li>
+        <li>Click "Extract Styles" to analyze the design properties</li>
+        <li>Copy the JSON to use with GenUI code generation</li>
+      </ol>
+    </div>
+
+    <div class="error-message" id="errorMessage"></div>
+    <div class="success-message" id="successMessage"></div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      Extracting styles...
+    </div>
+
+    <div class="button-group">
+      <button class="primary-btn" id="extractBtn">
+        🎨 Extract Styles
+      </button>
+      <button class="secondary-btn" id="copyBtn" disabled>
+        📋 Copy JSON
+      </button>
+    </div>
+
+    <div class="output-section" id="outputSection">
+      <div class="output-header">
+        <h3>Extracted JSON</h3>
+        <span class="stats" id="stats"></span>
+      </div>
+      <div class="json-output" id="jsonOutput"></div>
+    </div>
+
+    <div class="footer">
+      Made with ❤️ for Zoho Hackathon
+    </div>
+  </div>
+
+  <script>
+    let extractedData = null;
+
+    const extractBtn = document.getElementById('extractBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const jsonOutput = document.getElementById('jsonOutput');
+    const outputSection = document.getElementById('outputSection');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+    const loading = document.getElementById('loading');
+    const stats = document.getElementById('stats');
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.classList.add('visible');
+      successMessage.classList.remove('visible');
+      setTimeout(() => {
+        errorMessage.classList.remove('visible');
+      }, 5000);
+    }
+
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.classList.add('visible');
+      errorMessage.classList.remove('visible');
+      setTimeout(() => {
+        successMessage.classList.remove('visible');
+      }, 3000);
+    }
+
+    extractBtn.onclick = () => {
+      loading.classList.add('visible');
+      extractBtn.disabled = true;
+      errorMessage.classList.remove('visible');
+      successMessage.classList.remove('visible');
+
+      parent.postMessage({ pluginMessage: { type: 'extract-styles' } }, '*');
+    };
+
+    copyBtn.onclick = () => {
+      if (extractedData) {
+        const jsonString = JSON.stringify(extractedData, null, 2);
+
+        // Copy to clipboard
+        const textarea = document.createElement('textarea');
+        textarea.value = jsonString;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+
+        showSuccess('✅ JSON copied to clipboard!');
+      }
+    };
+
+    // Handle messages from plugin code
+    onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+
+      loading.classList.remove('visible');
+      extractBtn.disabled = false;
+
+      if (msg.type === 'extraction-complete') {
+        extractedData = msg.data;
+        const prettyJson = JSON.stringify(msg.data, null, 2);
+
+        jsonOutput.textContent = prettyJson;
+        outputSection.classList.add('visible');
+        copyBtn.disabled = false;
+
+        const nodeCount = msg.data.nodes.length;
+        stats.textContent = `${nodeCount} layer${nodeCount > 1 ? 's' : ''} extracted`;
+
+        showSuccess('✅ Styles extracted successfully!');
+      } else if (msg.type === 'error') {
+        showError(msg.message);
+        outputSection.classList.remove('visible');
+        copyBtn.disabled = true;
+      }
+    };
+  </script>
+</body>
+
+</html>

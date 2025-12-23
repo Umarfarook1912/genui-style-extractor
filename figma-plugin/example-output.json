@@ -1,0 +1,129 @@
+{
+  "source": "figma",
+  "timestamp": "2025-12-23T10:30:00.000Z",
+  "nodes": [
+    {
+      "id": "1:2",
+      "name": "Primary Button",
+      "nodeType": "FRAME",
+      "layout": {
+        "width": 140,
+        "height": 44,
+        "x": 100,
+        "y": 100,
+        "layoutMode": "HORIZONTAL",
+        "primaryAxisAlignItems": "CENTER",
+        "counterAxisAlignItems": "CENTER",
+        "itemSpacing": 8
+      },
+      "colors": {
+        "fills": [
+          "#667eea"
+        ],
+        "strokes": [],
+        "background": "#667eea"
+      },
+      "spacing": {
+        "paddingTop": 12,
+        "paddingRight": 24,
+        "paddingBottom": 12,
+        "paddingLeft": 24,
+        "borderRadius": 8
+      },
+      "effects": {
+        "shadows": [
+          {
+            "type": "drop-shadow",
+            "color": "#00000026",
+            "x": 0,
+            "y": 2,
+            "blur": 8,
+            "spread": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "1:3",
+      "name": "Button Text",
+      "nodeType": "TEXT",
+      "layout": {
+        "width": 92,
+        "height": 20,
+        "x": 124,
+        "y": 112
+      },
+      "typography": {
+        "fontFamily": "Inter",
+        "fontSize": 14,
+        "fontWeight": "SemiBold",
+        "lineHeight": "AUTO",
+        "letterSpacing": 0.5,
+        "textAlignHorizontal": "CENTER",
+        "textDecoration": "NONE",
+        "textCase": "ORIGINAL"
+      },
+      "colors": {
+        "fills": [
+          "#ffffff"
+        ],
+        "strokes": []
+      },
+      "spacing": {},
+      "effects": {
+        "shadows": []
+      }
+    },
+    {
+      "id": "1:4",
+      "name": "Card Container",
+      "nodeType": "FRAME",
+      "layout": {
+        "width": 320,
+        "height": 200,
+        "x": 300,
+        "y": 100,
+        "layoutMode": "VERTICAL",
+        "primaryAxisAlignItems": "MIN",
+        "counterAxisAlignItems": "STRETCH",
+        "itemSpacing": 16
+      },
+      "colors": {
+        "fills": [
+          "#ffffff"
+        ],
+        "strokes": [
+          "#e5e7eb"
+        ],
+        "background": "#ffffff"
+      },
+      "spacing": {
+        "paddingTop": 24,
+        "paddingRight": 24,
+        "paddingBottom": 24,
+        "paddingLeft": 24,
+        "borderRadius": 12
+      },
+      "effects": {
+        "shadows": [
+          {
+            "type": "drop-shadow",
+            "color": "#0000000d",
+            "x": 0,
+            "y": 4,
+            "blur": 6,
+            "spread": -1
+          },
+          {
+            "type": "drop-shadow",
+            "color": "#0000001a",
+            "x": 0,
+            "y": 2,
+            "blur": 4,
+            "spread": -1
+          }
+        ]
+      }
+    }
+  ]
+}

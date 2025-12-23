@@ -1,15 +1,16 @@
 {
-  "name": "GenUI Extractor",
-  "id": "com.genui.extractor",
+  "name": "GenUI Style Extractor",
+  "id": "genui-style-extractor",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui.html",
-  "editorType": ["figma"],
+  "editorType": [
+    "figma"
+  ],
+  "documentAccess": "dynamic-page",
   "networkAccess": {
     "allowedDomains": [
-      "https://genui-backend-908193831.development.catalystserverless.com",
-      "https://*.catalystserverless.com"
+      "none"
     ]
   }
 }
-
