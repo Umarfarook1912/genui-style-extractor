@@ -59,16 +59,48 @@ This Figma plugin extracts design properties from selected layers and converts t
    - Click the "🎨 Extract Styles" button
    - View the generated JSON in the plugin UI
 
-4. **Copy JSON**
-   - Click "📋 Copy JSON" to copy to clipboard
+4. **Convert to Format** (New!)
+   - After extraction, choose a format: **CSS**, **JSX**, or **Tailwind**
+   - Click "⚡ Convert to Selected Format"
+   - The converted code will be automatically copied to your clipboard
+   - All pixel values are converted to rem (base 16px)
 
-### In GenUI App:
+5. **Copy JSON** (Optional)
+   - Click "📋 Copy JSON" to copy raw JSON to clipboard
 
-1. Open GenUI web app
-2. Click the "🎨 Figma Plugin" tab
-3. Paste the copied JSON into the textarea
-4. Click "✨ Parse Figma JSON"
-5. Convert to CSS/Tailwind/JSX as usual
+### Conversion Examples:
+
+#### CSS Output
+```css
+.button {
+  width: 7.500rem;
+  height: 2.500rem;
+  background-color: #667eea;
+  border-radius: 0.500rem;
+  padding: 0.500rem 1.000rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+```
+
+#### JSX Output
+```jsx
+const ButtonStyle = {
+  width: '7.500rem',
+  height: '2.500rem',
+  backgroundColor: '#667eea',
+  borderRadius: '0.500rem',
+  padding: '0.500rem 1.000rem',
+  fontSize: '0.875rem',
+  fontWeight: '600',
+};
+// Usage: <div style={ButtonStyle}>Content</div>
+```
+
+#### Tailwind Output
+```
+className="w-[7.50rem] h-[2.50rem] bg-[#667eea] rounded-[0.50rem] px-[1.00rem] py-[0.50rem] text-[0.88rem] font-semibold"
+```
 
 ## 📊 JSON Structure
 

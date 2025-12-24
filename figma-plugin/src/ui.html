@@ -78,6 +78,109 @@
       margin-bottom: 20px;
     }
 
+    .format-buttons {
+      display: none;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+
+    .format-buttons.visible {
+      display: grid;
+    }
+
+    .conversion-options {
+      display: none;
+      margin-bottom: 12px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+
+    .conversion-options.visible {
+      display: block;
+    }
+
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-wrapper input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .checkbox-wrapper label {
+      cursor: pointer;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .converted-output {
+      display: none;
+      margin-top: 12px;
+    }
+
+    .converted-output.visible {
+      display: block;
+    }
+
+    .converted-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .converted-header h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .converted-code {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      max-height: 300px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .format-btn {
+      padding: 8px 12px;
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #555;
+    }
+
+    .format-btn:hover {
+      border-color: #667eea;
+      background: #f8f9ff;
+    }
+
+    .format-btn.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-color: #667eea;
+    }
+
     button {
       flex: 1;
       padding: 12px 20px;
@@ -172,7 +275,7 @@
       overflow: auto;
       white-space: pre-wrap;
       word-wrap: break-word;
-      margin-bottom: 12px;
+      margin-bottom: 24px;
     }
 
     .error-message {
@@ -287,6 +390,39 @@
         <span class="stats" id="stats"></span>
       </div>
       <div class="json-output" id="jsonOutput"></div>
+
+      <div id="downloadContainer" style="margin-top:8px; display:none;">
+        <button class="secondary-btn" id="downloadBtn">
+          💾 Download JSON
+        </button>
+      </div>
+
+      <div class="format-buttons" id="formatButtons">
+        <button class="format-btn" id="cssBtn">CSS</button>
+        <button class="format-btn" id="jsxBtn">JSX</button>
+        <button class="format-btn" id="tailwindBtn">Tailwind</button>
+      </div>
+
+      <div class="conversion-options" id="conversionOptions">
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="pxToRemCheckbox" checked>
+          <label for="pxToRemCheckbox">Convert px to rem (16px base)</label>
+        </div>
+      </div>
+
+      <button class="primary-btn" id="convertBtn" disabled style="width: 100%; margin-top: 8px;">
+        ⚡ Convert to Selected Format
+      </button>
+
+      <div class="converted-output" id="convertedOutput">
+        <div class="converted-header">
+          <h4>Converted Code</h4>
+          <button class="secondary-btn" id="copyConvertedBtn" style="padding: 6px 12px; font-size: 12px;">
+            📋 Copy
+          </button>
+        </div>
+        <div class="converted-code" id="convertedCode"></div>
+      </div>
     </div>
 
     <div class="footer">
@@ -296,10 +432,23 @@
 
   <script>
     let extractedData = null;
+    let selectedFormat = null;
 
     const extractBtn = document.getElementById('extractBtn');
     const copyBtn = document.getElementById('copyBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const downloadContainer = document.getElementById('downloadContainer');
+    const convertBtn = document.getElementById('convertBtn');
+    const cssBtn = document.getElementById('cssBtn');
+    const jsxBtn = document.getElementById('jsxBtn');
+    const tailwindBtn = document.getElementById('tailwindBtn');
+    const formatButtons = document.getElementById('formatButtons');
+    const conversionOptions = document.getElementById('conversionOptions');
+    const pxToRemCheckbox = document.getElementById('pxToRemCheckbox');
     const jsonOutput = document.getElementById('jsonOutput');
+    const convertedOutput = document.getElementById('convertedOutput');
+    const convertedCode = document.getElementById('convertedCode');
+    const copyConvertedBtn = document.getElementById('copyConvertedBtn');
     const outputSection = document.getElementById('outputSection');
     const errorMessage = document.getElementById('errorMessage');
     const successMessage = document.getElementById('successMessage');
@@ -323,6 +472,80 @@
         successMessage.classList.remove('visible');
       }, 3000);
     }
+
+    // Download JSON handler
+    downloadBtn.onclick = () => {
+      if (extractedData) {
+        const jsonString = JSON.stringify(extractedData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `figma-styles-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showSuccess('✅ JSON file downloaded!');
+      }
+    };
+
+    // Format button handlers
+    cssBtn.onclick = () => {
+      selectedFormat = 'css';
+      cssBtn.classList.add('active');
+      jsxBtn.classList.remove('active');
+      tailwindBtn.classList.remove('active');
+      conversionOptions.classList.add('visible');
+      convertBtn.disabled = false;
+      convertedOutput.classList.remove('visible');
+    };
+
+    jsxBtn.onclick = () => {
+      selectedFormat = 'jsx';
+      jsxBtn.classList.add('active');
+      cssBtn.classList.remove('active');
+      tailwindBtn.classList.remove('active');
+      conversionOptions.classList.add('visible');
+      convertBtn.disabled = false;
+      convertedOutput.classList.remove('visible');
+    };
+
+    tailwindBtn.onclick = () => {
+      selectedFormat = 'tailwind';
+      tailwindBtn.classList.add('active');
+      cssBtn.classList.remove('active');
+      jsxBtn.classList.remove('active');
+      conversionOptions.classList.add('visible');
+      convertBtn.disabled = false;
+      convertedOutput.classList.remove('visible');
+    };
+
+    // Copy converted code handler
+    copyConvertedBtn.onclick = () => {
+      const code = convertedCode.textContent;
+      const textarea = document.createElement('textarea');
+      textarea.value = code;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showSuccess('✅ Converted code copied to clipboard!');
+    };
+
+    convertBtn.onclick = () => {
+      if (extractedData && selectedFormat) {
+        const usePxToRem = pxToRemCheckbox.checked;
+        parent.postMessage({
+          pluginMessage: {
+            type: 'convert-styles',
+            format: selectedFormat,
+            data: extractedData,
+            pxToRem: usePxToRem
+          }
+        }, '*');
+      }
+    };
 
     extractBtn.onclick = () => {
       loading.classList.add('visible');
@@ -362,16 +585,34 @@
 
         jsonOutput.textContent = prettyJson;
         outputSection.classList.add('visible');
+        formatButtons.classList.add('visible');
         copyBtn.disabled = false;
+        if (downloadContainer) downloadContainer.style.display = 'block';
+        convertedOutput.classList.remove('visible');
+        conversionOptions.classList.remove('visible');
+
+        // Reset format selection
+        cssBtn.classList.remove('active');
+        jsxBtn.classList.remove('active');
+        tailwindBtn.classList.remove('active');
+        convertBtn.disabled = true;
+        selectedFormat = null;
 
         const nodeCount = msg.data.nodes.length;
         stats.textContent = `${nodeCount} layer${nodeCount > 1 ? 's' : ''} extracted`;
 
         showSuccess('✅ Styles extracted successfully!');
+      } else if (msg.type === 'conversion-complete') {
+        const code = msg.code;
+        convertedCode.textContent = code;
+        convertedOutput.classList.add('visible');
+
+        showSuccess(`✅ Converted to ${selectedFormat.toUpperCase()}!`);
       } else if (msg.type === 'error') {
         showError(msg.message);
         outputSection.classList.remove('visible');
         copyBtn.disabled = true;
+        if (downloadContainer) downloadContainer.style.display = 'none';
       }
     };
   </script>
