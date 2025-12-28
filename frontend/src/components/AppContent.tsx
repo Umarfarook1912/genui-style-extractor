@@ -9,9 +9,11 @@ import { Card } from "./Card";
 import { CodeBlock } from "./CodeBlock";
 import { Loader } from "./Loader";
 import { ImageUpload } from "./ImageUpload";
+import { ExtractionModal } from "./ExtractionModal";
 import { useConvertStyles } from "../hooks/useConvertStyles";
 import { useImageAnalysis } from "../hooks/useImageAnalysis";
 import { CATALYST_SAVE_CONVERSION_URL } from "../constants/api";
+import { theme } from "../theme";
 import type { DesignJson } from "../hooks/useImageAnalysis";
 
 type Styles = Record<string, string>;
@@ -21,10 +23,13 @@ type InputMode = "extract" | "upload" | "figma";
 interface AppContentProps {
   onLogout: () => void;
   userEmail?: string;
+  userName?: string;
+  onViewHistory?: () => void;
 }
 
-export function AppContent({ onLogout, userEmail }: AppContentProps) {
+export function AppContent({ onLogout, userEmail, userName, onViewHistory }: AppContentProps) {
   // State management
+  const [showModal, setShowModal] = useState(false);
   const [inputMode, setInputMode] = useState<InputMode>("extract");
   const [styles, setStyles] = useState<Styles | null>(null);
   const [designJson, setDesignJson] = useState<DesignJson | null>(null);
@@ -344,8 +349,8 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
           gap: '12px',
           fontSize: '14px',
         }}>
-          <span style={{ color: '#666' }}>
-            👤 {userEmail || 'User'}
+          <span style={{ color: theme.colors.text.secondary }}>
+            👤 {userName || userEmail || 'User'}
           </span>
           <Button onClick={onLogout} variant="secondary" style={{
             padding: '6px 12px',
@@ -358,19 +363,49 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
 
       {/* Main Content */}
       <div className="content">
-        {!styles && !extracting && !isAnalyzing && (
+        {!styles && !extracting && !isAnalyzing && !showModal && inputMode === 'extract' && (
           <>
-            {/* Input Mode Selector */}
+            {/* Welcome Screen with Extraction Button */}
             <Card className="mode-selector">
-              <div style={{
-                display: 'flex',
-                gap: '8px',
-                marginBottom: '16px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                padding: '4px',
-                backgroundColor: '#f9fafb'
-              }}>
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <h2 style={{ marginBottom: '16px', fontSize: '20px' }}>👋 Welcome!</h2>
+                <p style={{ marginBottom: '24px', color: '#666', lineHeight: '1.6' }}>
+                  Start extracting styles from websites, images, or Figma designs
+                </p>
+                <Button
+                  onClick={() => setShowModal(true)}
+                  variant="primary"
+                  style={{ fontSize: '15px', padding: '12px 24px' }}
+                >
+                  Start Extraction
+                </Button>
+                {onViewHistory && (
+                  <div style={{ marginTop: '20px' }}>
+                    <button
+                      onClick={onViewHistory}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: theme.colors.primary.main,
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                        fontSize: '14px'
+                      }}
+                    >
+                      View History
+                    </button>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </>
+        )}
+
+        {!styles && !extracting && !isAnalyzing && (inputMode === 'upload' || inputMode === 'figma') && (
+          <>
+            {/* Input Mode Display */}
+            <Card className="mode-selector">
+              <div style={{ marginBottom: '16px' }}>
                 <button
                   onClick={() => {
                     setInputMode('extract');
@@ -382,94 +417,21 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
                     }
                   }}
                   style={{
-                    flex: 1,
-                    padding: '10px 16px',
-                    background: inputMode === 'extract'
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                      : 'transparent',
-                    color: inputMode === 'extract' ? 'white' : '#666',
+                    background: 'none',
                     border: 'none',
-                    borderRadius: '6px',
+                    color: theme.colors.primary.main,
                     cursor: 'pointer',
                     fontSize: '14px',
-                    fontWeight: '600',
-                    transition: 'all 0.2s',
+                    padding: '8px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
                   }}
                 >
-                  🎯 Extract from Web
-                </button>
-                <button
-                  onClick={() => {
-                    setInputMode('upload');
-                    setStyles(null);
-                    setDesignJson(null);
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '10px 16px',
-                    background: inputMode === 'upload'
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                      : 'transparent',
-                    color: inputMode === 'upload' ? 'white' : '#666',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  📸 Upload Image
-                </button>
-                <button
-                  onClick={() => {
-                    setInputMode('figma');
-                    setStyles(null);
-                    setDesignJson(null);
-                    if (imagePreview) {
-                      URL.revokeObjectURL(imagePreview);
-                      setImagePreview(null);
-                    }
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '10px 16px',
-                    background: inputMode === 'figma'
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                      : 'transparent',
-                    color: inputMode === 'figma' ? 'white' : '#666',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  🎨 Figma Plugin
+                  ← Back to Start
                 </button>
               </div>
-
-              {inputMode === 'extract' ? (
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexDirection: 'column' }}>
-                  <p style={{ marginBottom: '8px' }}>Select an element from any webpage to extract its styles</p>
-                  <label style={{ fontSize: 13 }}>
-                    <input
-                      type="checkbox"
-                      checked={persistentWindow}
-                      onChange={(e) => {
-                        const v = !!e.target.checked;
-                        setPersistentWindow(v);
-                        try { localStorage.setItem('genui_persistent_window', v ? '1' : '0'); } catch (err) { }
-                      }}
-                    />{' '}
-                    Open persistent window for extraction
-                  </label>
-                  <Button onClick={startExtraction} variant="primary">
-                    🎯 Start Extraction
-                  </Button>
-                </div>
-              ) : inputMode === 'upload' ? (
+              {inputMode === 'upload' ? (
                 <ImageUpload
                   onImageSelect={handleImageSelect}
                   isProcessing={isAnalyzing}
@@ -620,6 +582,34 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
 
         {styles && (
           <>
+            {/* Back to Start Link */}
+            <div style={{ marginBottom: '16px' }}>
+              <button
+                onClick={() => {
+                  setInputMode('extract');
+                  setStyles(null);
+                  setDesignJson(null);
+                  if (imagePreview) {
+                    URL.revokeObjectURL(imagePreview);
+                    setImagePreview(null);
+                  }
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: theme.colors.primary.main,
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  padding: '8px 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                ← Back to Start
+              </button>
+            </div>
+
             {(inputMode === 'upload' || inputMode === 'figma') && designJson && (
               <Card title={inputMode === 'figma' ? "📄 Figma Design JSON" : "📄 Design JSON"} className="design-json-section">
                 <div style={{ marginBottom: '12px' }}>
@@ -815,6 +805,41 @@ export function AppContent({ onLogout, userEmail }: AppContentProps) {
           </>
         )}
       </div>
+
+      {/* Extraction Modal */}
+      {showModal && (
+        <ExtractionModal
+          onClose={() => setShowModal(false)}
+          onSelectExtract={() => {
+            setInputMode('extract');
+            setShowModal(false);
+            setStyles(null);
+            setDesignJson(null);
+            if (imagePreview) {
+              URL.revokeObjectURL(imagePreview);
+              setImagePreview(null);
+            }
+            // Automatically start extraction after modal closes
+            setTimeout(() => startExtraction(), 100);
+          }}
+          onSelectUpload={() => {
+            setInputMode('upload');
+            setShowModal(false);
+            setStyles(null);
+            setDesignJson(null);
+          }}
+          onSelectFigma={() => {
+            setInputMode('figma');
+            setShowModal(false);
+            setStyles(null);
+            setDesignJson(null);
+            if (imagePreview) {
+              URL.revokeObjectURL(imagePreview);
+              setImagePreview(null);
+            }
+          }}
+        />
+      )}
     </>
   );
 }

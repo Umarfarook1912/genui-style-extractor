@@ -88,7 +88,7 @@ export const ImageUpload = ({
         onDrop={handleDrop}
         onClick={handleClick}
         style={{
-          border: `2px dashed ${isDragging ? "#667eea" : "#d1d5db"}`,
+          border: `2px dashed ${isDragging ? "#06b6d4" : "#d1d5db"}`,
           borderRadius: "12px",
           padding: "40px 20px",
           textAlign: "center",

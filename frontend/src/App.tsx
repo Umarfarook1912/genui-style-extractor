@@ -15,7 +15,7 @@ type Tab = "convert" | "history";
 
 export default function App() {
   // Authentication
-  const { isAuthenticated, isLoading: authLoading, login, signup, resetPassword, logout } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, login, signup, resetPassword, logout, userEmail, userName } = useAuth();
 
   // Tab state
   const [activeTab, setActiveTab] = useState<Tab>("convert");
@@ -43,7 +43,12 @@ export default function App() {
   return (
     <div className="app-container">
       {activeTab === "convert" ? (
-        <AppContent onLogout={logout} />
+        <AppContent
+          onLogout={logout}
+          userName={userName}
+          userEmail={userEmail}
+          onViewHistory={() => setActiveTab('history')}
+        />
       ) : (
         <>
           {/* Header for History Tab */}
@@ -59,7 +64,7 @@ export default function App() {
               fontSize: '14px',
             }}>
               <span style={{ color: '#666' }}>
-                👤 User
+                👤 {userName || userEmail || 'User'}
               </span>
               <button
                 onClick={logout}
@@ -78,57 +83,32 @@ export default function App() {
             </div>
           </header>
           <History />
+
+          {/* Back to Convert Button */}
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <button
+              onClick={() => setActiveTab('convert')}
+              style={{
+                padding: '12px 24px',
+                background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)',
+              }}
+            >
+              ← Back to Convert
+            </button>
+          </div>
         </>
       )}
 
-      {/* Tab Navigation - Fixed at Bottom */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: 'white',
-        borderTop: '1px solid #e5e7eb',
-        display: 'flex',
-        boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
-      }}>
-        <button
-          onClick={() => setActiveTab('convert')}
-          style={{
-            flex: 1,
-            padding: '14px',
-            background: activeTab === 'convert' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
-            color: activeTab === 'convert' ? 'white' : '#666',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '600',
-            transition: 'all 0.2s',
-          }}
-        >
-          ✨ Convert
-        </button>
-        <button
-          onClick={() => setActiveTab('history')}
-          style={{
-            flex: 1,
-            padding: '14px',
-            background: activeTab === 'history' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
-            color: activeTab === 'history' ? 'white' : '#666',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '600',
-            transition: 'all 0.2s',
-          }}
-        >
-          📜 History
-        </button>
-      </div>
-
       {/* Footer */}
-      <footer className="app-footer" style={{ marginBottom: '60px' }}>
-        <p>Made with ❤️ for Zoho Hackathon</p>
+      <footer className="app-footer">
+        <p>GenUI Style Extractor</p>
       </footer>
     </div>
   );

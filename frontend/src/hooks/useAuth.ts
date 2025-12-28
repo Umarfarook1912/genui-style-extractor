@@ -16,6 +16,8 @@ import { API_BASE_URL } from '../constants/api';
 interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
+  userEmail?: string;
+  userName?: string;
 }
 
 const AUTH_LOGIN_URL = `${API_BASE_URL}/__catalyst/auth/login`;
@@ -26,6 +28,8 @@ export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     isLoading: true,
+    userEmail: undefined,
+    userName: undefined,
   });
 
   // Check if user is already logged in on mount (only once)
@@ -49,7 +53,7 @@ export function useAuth() {
       });
 
       if (!response.ok) {
-        setAuthState({ isAuthenticated: false, isLoading: false });
+        setAuthState({ isAuthenticated: false, isLoading: false, userEmail: undefined, userName: undefined });
         return;
       }
 
@@ -57,10 +61,40 @@ export function useAuth() {
       const message = String(result?.message || '').toLowerCase();
       const looksUnauthed = message.includes('log in') || message.includes('login');
 
-      setAuthState({ isAuthenticated: !looksUnauthed, isLoading: false });
+      // Try to fetch user info if authenticated
+      let userEmail: string | undefined;
+      let userName: string | undefined;
+
+      if (!looksUnauthed) {
+        try {
+          // Try to get user info from Catalyst user endpoint
+          const userResponse = await fetch(`${API_BASE_URL}/__catalyst/user/me`, {
+            method: 'GET',
+            credentials: 'include',
+          });
+
+          if (userResponse.ok) {
+            const userData = await userResponse.json().catch(() => null);
+            if (userData) {
+              userEmail = userData.email || userData.Email || userData.user_email;
+              userName = userData.name || userData.Name || userData.display_name || userData.first_name ||
+                (userData.email || userData.Email)?.split('@')[0];
+            }
+          }
+        } catch (err) {
+          console.log('Could not fetch user info:', err);
+        }
+      }
+
+      setAuthState({
+        isAuthenticated: !looksUnauthed,
+        isLoading: false,
+        userEmail,
+        userName,
+      });
     } catch (error) {
       console.error('Auth check failed:', error);
-      setAuthState({ isAuthenticated: false, isLoading: false });
+      setAuthState({ isAuthenticated: false, isLoading: false, userEmail: undefined, userName: undefined });
     }
   }, []);
 
@@ -108,7 +142,8 @@ export function useAuth() {
 
       const authed = await isAuthenticatedNow();
       if (authed) {
-        setAuthState({ isAuthenticated: true, isLoading: false });
+        // Re-check auth status to get user info
+        await checkAuthStatus();
         try { authWindow.close(); } catch (e) { }
         window.clearInterval(interval);
       }
@@ -130,7 +165,7 @@ export function useAuth() {
   const logout = useCallback(async () => {
     // Catalyst hosted authentication doesn't provide a logout endpoint
     // Just clear the local auth state - the session cookies will expire naturally
-    // or the next auth check will fail and redirect to login
+    // or the next auth check will fail and redirect to log, userEmail: undefined, userName: undefinedin
     setAuthState({ isAuthenticated: false, isLoading: false });
   }, []);
 

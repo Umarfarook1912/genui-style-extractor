@@ -22,7 +22,7 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
       justifyContent: 'center',
       minHeight: '100vh',
       padding: '20px',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
     }}>
       <Card style={{
         maxWidth: '450px',
@@ -97,7 +97,7 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
             padding: '14px',
             fontSize: '16px',
             fontWeight: '600',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
             border: 'none',
             display: 'flex',
             alignItems: 'center',
