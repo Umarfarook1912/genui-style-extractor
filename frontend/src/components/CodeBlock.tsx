@@ -36,7 +36,7 @@ export const CodeBlock = ({
                 <div className="code-block-header">
                     <span className="code-block-language">{language}</span>
                     <button className="btn btn-small copy-btn" onClick={handleCopy}>
-                        {copied ? "✅ Copied!" : "📋 Copy"}
+                        {copied ? "Copied!" : "Copy"}
                     </button>
                 </div>
             )}

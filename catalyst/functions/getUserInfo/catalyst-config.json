@@ -1,6 +1,0 @@
-{
-    "function_name": "getUserInfo",
-    "route": "/server/getUserInfo",
-    "execution_type": "event",
-    "env_variables": {}
-}

@@ -38,8 +38,9 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
         <div style={{
           fontSize: '48px',
           marginBottom: '12px',
+          fontWeight: 700,
         }}>
-          🎨
+          GenUI
         </div>
 
         {/* Title */}
@@ -77,7 +78,7 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
             marginBottom: '10px',
             color: '#2d3748',
           }}>
-            ✨ What you'll get:
+            What you'll get:
           </h3>
           <ul style={{
             fontSize: '13px',

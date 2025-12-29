@@ -217,7 +217,7 @@ export default function App() {
     <div className="app-container">
       {/* Header */}
       <header className="app-header">
-        <h1>🎨 GenUI</h1>
+        <h1>GenUI</h1>
         <p className="tagline">Extract styles, generate code</p>
       </header>
 
@@ -241,7 +241,7 @@ export default function App() {
                 Open persistent window for extraction
               </label>
               <Button onClick={startExtraction} variant="primary">
-                🎯 Start Extraction
+                Start Extraction
               </Button>
             </div>
           </Card>
@@ -263,7 +263,7 @@ export default function App() {
             {/* Element Info Card */}
             <Card className="element-info">
               <h3>
-                📦 Element: <code>{styles.tagName || "Unknown"}</code>
+                Element: <code>{styles.tagName || "Unknown"}</code>
               </h3>
               {styles.className && (
                 <p className="class-name">
@@ -358,7 +358,7 @@ export default function App() {
               )}
 
               <Button onClick={handleConvert} disabled={isPending} variant="primary">
-                {isPending ? "⏳ Converting..." : "✨ Convert Styles"}
+                {isPending ? "Converting..." : "Convert Styles"}
               </Button>
             </Card>
 
@@ -373,7 +373,7 @@ export default function App() {
             {isError && (
               <Card className="error-message">
                 <p style={{ color: "#ef4444" }}>
-                  ❌ Error: {error?.message || "Failed to convert styles"}
+                  Error: {error?.message || "Failed to convert styles"}
                 </p>
                 <p style={{ fontSize: "0.9rem", marginTop: "8px" }}>
                   Make sure the Catalyst function is deployed and the URL is configured correctly.
@@ -390,7 +390,7 @@ export default function App() {
 
             {/* Extract Another Button */}
             <Button onClick={startExtraction} variant="secondary" className="mt-16">
-              🔄 Extract Another Element
+              Extract Another Element
             </Button>
           </>
         )}
@@ -398,7 +398,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="app-footer">
-        <p>Made with ❤️ for Zoho Hackathon</p>
+        <p>Made for Zoho Hackathon</p>
       </footer>
     </div>
   );

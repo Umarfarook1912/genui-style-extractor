@@ -43,7 +43,6 @@ export function useAuth() {
 
   const checkAuthStatus = useCallback(async () => {
     try {
-      console.log('🔍 [AUTH] Starting auth check...');
       setAuthState(prev => ({ ...prev, isLoading: true }));
 
       // Verify auth by calling a protected endpoint using Catalyst cookies.
@@ -52,10 +51,7 @@ export function useAuth() {
         credentials: 'include',
       });
 
-      console.log('🔍 [AUTH] getHistory response status:', response.ok, response.status);
-
       if (!response.ok) {
-        console.log('❌ [AUTH] getHistory failed, user not authenticated');
         setAuthState({ isAuthenticated: false, isLoading: false, userEmail: undefined, userName: undefined });
         return;
       }
@@ -63,8 +59,6 @@ export function useAuth() {
       const result = await response.json().catch(() => null);
       const message = String(result?.message || '').toLowerCase();
       const looksUnauthed = message.includes('log in') || message.includes('login');
-      console.log('🔍 [AUTH] getHistory result:', result);
-      console.log('🔍 [AUTH] message:', message, 'looksUnauthed:', looksUnauthed);
 
       // Extract user info from the response
       let userEmail: string | undefined;
@@ -72,24 +66,14 @@ export function useAuth() {
 
       if (!looksUnauthed && result?.userInfo) {
         const userData = result.userInfo;
-        console.log('📦 [AUTH] User Info from getHistory:', userData);
-        console.log('📦 [AUTH] Available fields:', userData ? Object.keys(userData) : 'none');
-
         if (userData) {
           userEmail = userData.email || userData.Email || userData.user_email;
-          console.log('📧 [AUTH] Extracted email:', userEmail);
 
           // Priority: first_name > display_name > name > email username
           userName = userData.first_name || userData.First_Name ||
             userData.display_name || userData.Display_Name ||
             userData.name || userData.Name ||
             (userData.email || userData.Email)?.split('@')[0];
-
-          console.log('👤 [AUTH] Field check - first_name:', userData.first_name);
-          console.log('👤 [AUTH] Field check - First_Name:', userData.First_Name);
-          console.log('👤 [AUTH] Field check - display_name:', userData.display_name);
-          console.log('👤 [AUTH] Field check - name:', userData.name);
-          console.log('✅ [AUTH] Final extracted userName:', userName, 'userEmail:', userEmail);
         }
       }
 
@@ -99,10 +83,9 @@ export function useAuth() {
         userEmail,
         userName,
       };
-      console.log('🎯 [AUTH] Setting final auth state:', finalAuthState);
       setAuthState(finalAuthState);
     } catch (error) {
-      console.error('❌ [AUTH] Auth check failed:', error);
+      console.error('Auth check failed:', error);
       setAuthState({ isAuthenticated: false, isLoading: false, userEmail: undefined, userName: undefined });
     }
   }, []);

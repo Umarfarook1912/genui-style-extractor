@@ -112,10 +112,10 @@ export function History() {
       <Card style={{ margin: '20px' }}>
         <div style={{ textAlign: 'center', padding: '20px' }}>
           <p style={{ color: '#ef4444', marginBottom: '16px' }}>
-            ❌ Error: {error}
+            Error: {error}
           </p>
           <Button onClick={fetchHistory} variant="primary">
-            🔄 Retry
+            Retry
           </Button>
         </div>
       </Card>
@@ -125,7 +125,7 @@ export function History() {
   if (history.length === 0) {
     return (
       <Card style={{ margin: '20px', textAlign: 'center', padding: '40px' }}>
-        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📜</div>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }} />
         <h3 style={{ marginBottom: '8px' }}>No conversion history yet</h3>
         <p style={{ color: '#666', fontSize: '14px' }}>
           Start by extracting and converting some styles!
@@ -143,13 +143,13 @@ export function History() {
         marginBottom: '16px',
       }}>
         <h2 style={{ margin: 0, fontSize: '20px' }}>
-          📜 Your Conversions ({history.length})
+          Your Conversions ({history.length})
         </h2>
         <Button onClick={fetchHistory} variant="secondary" style={{
           padding: '6px 12px',
           fontSize: '13px',
         }}>
-          🔄 Refresh
+          Refresh
         </Button>
       </div>
 

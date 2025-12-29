@@ -28,7 +28,6 @@ interface AppContentProps {
 }
 
 export function AppContent({ onLogout, userEmail, userName, onViewHistory }: AppContentProps) {
-  console.log('🎨 [AppContent] Received props - userName:', userName, 'userEmail:', userEmail);
 
   // State management
   const [showModal, setShowModal] = useState(false);
@@ -342,7 +341,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
       {/* Header */}
       <header className="app-header">
         <div>
-          <h1>🎨 GenUI</h1>
+          <h1>GenUI</h1>
           <p className="tagline">Extract styles, generate code</p>
         </div>
         <div style={{
@@ -352,7 +351,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
           fontSize: '14px',
         }}>
           <span style={{ color: theme.colors.text.secondary, fontWeight: '500' }}>
-            👤 {userName || userEmail?.split('@')[0] || 'User'}
+            {userName || userEmail?.split('@')[0] || 'User'}
           </span>
           <Button onClick={onLogout} variant="secondary" style={{
             padding: '6px 12px',
@@ -370,7 +369,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
             {/* Welcome Screen with Extraction Button */}
             <Card className="mode-selector">
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <h2 style={{ marginBottom: '16px', fontSize: '20px' }}>👋 Welcome!</h2>
+                <h2 style={{ marginBottom: '16px', fontSize: '20px' }}>Welcome!</h2>
                 <p style={{ marginBottom: '24px', color: '#666', lineHeight: '1.6' }}>
                   Start extracting styles from websites, images, or Figma designs
                 </p>
@@ -441,7 +440,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
                 />
               ) : (
                 <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>🎨 Figma Plugin</h3>
+                  <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>Figma Plugin</h3>
                   <p style={{ marginBottom: '16px', color: '#666', lineHeight: '1.6' }}>
                     Extract design styles directly from Figma using our plugin
                   </p>
@@ -549,7 +548,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
                     }}
                     variant="primary"
                   >
-                    ✨ Parse Figma JSON
+                    Parse Figma JSON
                   </Button>
                   <p style={{ marginTop: '12px', fontSize: '12px', color: '#888' }}>
                     Need help? Check the <strong>figma-plugin/README.md</strong> for detailed instructions
@@ -574,7 +573,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
         {isAnalysisError && (
           <Card className="error-message">
             <p style={{ color: "#ef4444" }}>
-              ❌ Error: {analysisError?.message || "Failed to analyze image"}
+              Error: {analysisError?.message || "Failed to analyze image"}
             </p>
             <p style={{ fontSize: "0.9rem", marginTop: "8px" }}>
               Make sure the analyzeImage Catalyst function is deployed and configured correctly.
@@ -613,7 +612,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
             </div>
 
             {(inputMode === 'upload' || inputMode === 'figma') && designJson && (
-              <Card title={inputMode === 'figma' ? "📄 Figma Design JSON" : "📄 Design JSON"} className="design-json-section">
+              <Card title={inputMode === 'figma' ? "Figma Design JSON" : "Design JSON"} className="design-json-section">
                 <div style={{ marginBottom: '12px' }}>
                   <p style={{ fontSize: '14px', color: '#666', marginBottom: '12px' }}>
                     {inputMode === 'figma'
@@ -623,7 +622,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
                   <CodeBlock code={JSON.stringify(designJson, null, 2)} language="json" />
                 </div>
                 <Button onClick={handleDownloadDesignJson} variant="secondary" style={{ marginTop: '8px' }}>
-                  💾 Download design.json
+                  Download design.json
                 </Button>
               </Card>
             )}
@@ -631,7 +630,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
             {inputMode === 'extract' && (
               <Card className="element-info">
                 <h3>
-                  📦 Element: <code>{styles.tagName || "Unknown"}</code>
+                  Element: <code>{styles.tagName || "Unknown"}</code>
                 </h3>
                 {styles.className && (
                   <p className="class-name">
@@ -725,7 +724,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
               )}
 
               <Button onClick={handleConvert} disabled={isPending} variant="primary">
-                {isPending ? "⏳ Converting..." : "✨ Convert Styles"}
+                {isPending ? "Converting..." : "Convert Styles"}
               </Button>
             </Card>
 
@@ -738,7 +737,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
             {isError && (
               <Card className="error-message">
                 <p style={{ color: "#ef4444" }}>
-                  ❌ Error: {error?.message || "Failed to convert styles"}
+                  Error: {error?.message || "Failed to convert styles"}
                 </p>
                 <p style={{ fontSize: "0.9rem", marginTop: "8px" }}>
                   Make sure the Catalyst function is deployed and the URL is configured correctly.
@@ -757,7 +756,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
                       variant={isSaved ? "secondary" : "primary"}
                       style={{ minWidth: '140px' }}
                     >
-                      {isSaving ? "💾 Saving..." : isSaved ? "✅ Saved" : "💾 Save to History"}
+                      {isSaving ? "Saving..." : isSaved ? "Saved" : "Save to History"}
                     </Button>
                     {isSaved && (
                       <span style={{ color: '#10b981', fontSize: '14px' }}>
@@ -772,7 +771,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
             <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
               {inputMode === 'extract' ? (
                 <Button onClick={startExtraction} variant="secondary" style={{ flex: 1 }}>
-                  🔄 Extract Another Element
+                  Extract Another Element
                 </Button>
               ) : inputMode === 'upload' ? (
                 <Button
@@ -787,7 +786,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
                   variant="secondary"
                   style={{ flex: 1 }}
                 >
-                  🔄 Upload Another Image
+                  Upload Another Image
                 </Button>
               ) : (
                 <Button
@@ -800,7 +799,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
                   variant="secondary"
                   style={{ flex: 1 }}
                 >
-                  🔄 Parse Another Figma JSON
+                  Parse Another Figma JSON
                 </Button>
               )}
             </div>

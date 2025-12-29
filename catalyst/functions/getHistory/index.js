@@ -86,17 +86,13 @@ module.exports = (req, res) => {
  */
 async function getConversionHistory(req, limit, offset, formatFilter, returnUserInfo = false) {
     try {
-        console.log('🔵 getHistory: Starting fetch operation...');
-        console.log('🔵 Params:', { limit, offset, formatFilter, returnUserInfo });
+        // Fetch conversion history and optional user info
 
         const catalystApp = catalyst.initialize(req);
         const table = catalystApp.datastore().table('ConversionHistory');
 
-        console.log('🔵 Table initialized:', typeof table);
-
         // Get authenticated user ID
         const userId = await getAuthenticatedUserId(catalystApp);
-        console.log('🔵 User ID:', userId);
 
         // Get user information if requested
         let userInfo = null;
@@ -104,7 +100,6 @@ async function getConversionHistory(req, limit, offset, formatFilter, returnUser
             try {
                 const userManagement = catalystApp.userManagement();
                 const currentUser = await userManagement.getCurrentUser();
-                console.log('📦 getHistory - User Info:', JSON.stringify(currentUser, null, 2));
 
                 if (currentUser) {
                     userInfo = {
@@ -118,10 +113,9 @@ async function getConversionHistory(req, limit, offset, formatFilter, returnUser
                         zuid: currentUser.zuid || currentUser.ZUID,
                         created_time: currentUser.created_time || currentUser.Created_Time
                     };
-                    console.log('✅ getHistory - Processed user info:', userInfo);
                 }
             } catch (err) {
-                console.log('⚠️ Could not fetch user info:', err.message);
+                console.log('Could not fetch user info:', err.message);
             }
         }
 
@@ -160,7 +154,7 @@ async function getConversionHistory(req, limit, offset, formatFilter, returnUser
         // Apply format filter if provided
         if (formatFilter) {
             records = records.filter(record => record.format === formatFilter);
-            console.log('🔵 Records after format filter:', records.length);
+            // Apply format filter if provided
         }
 
         // Get total count
@@ -168,7 +162,7 @@ async function getConversionHistory(req, limit, offset, formatFilter, returnUser
 
         // Apply pagination
         const paginatedRecords = records.slice(offset, offset + limit);
-        console.log('🔵 Paginated records:', paginatedRecords.length);
+
 
         // Transform records to match frontend expectations (snake_case keys)
         const conversions = paginatedRecords.map(record => ({
@@ -180,8 +174,6 @@ async function getConversionHistory(req, limit, offset, formatFilter, returnUser
             user_agent: record.user_agent,
             created_time: record.CREATEDTIME
         }));
-
-        console.log('✅ getHistory: Success, returning', conversions.length, 'records');
 
         const response = {
             success: true,
@@ -202,10 +194,7 @@ async function getConversionHistory(req, limit, offset, formatFilter, returnUser
         return response;
 
     } catch (error) {
-        console.error('❌ Datastore query error:', error);
-        console.error('❌ Error type:', typeof error);
-        console.error('❌ Error message:', error?.message);
-        console.error('❌ Error stack:', error?.stack);
+        console.error('Datastore query error:', error);
         throw new Error(`Failed to fetch history: ${error.message || String(error)}`);
     }
 }

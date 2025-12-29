@@ -142,10 +142,9 @@ export const ImageUpload = ({
               style={{
                 fontSize: "48px",
                 marginBottom: "8px",
+                fontWeight: 700,
               }}
-            >
-              📸
-            </div>
+            />
             <div>
               <p style={{ fontSize: "16px", fontWeight: "600", marginBottom: "4px" }}>
                 Upload UI Design Image
@@ -183,7 +182,7 @@ export const ImageUpload = ({
             variant="secondary"
             style={{ flex: 1 }}
           >
-            🔄 Change Image
+            Change Image
           </Button>
         </div>
       )}

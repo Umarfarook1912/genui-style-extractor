@@ -17,8 +17,6 @@ export default function App() {
   // Authentication
   const { isAuthenticated, isLoading: authLoading, login, signup, resetPassword, logout, userEmail, userName } = useAuth();
 
-  console.log('🎨 [APP] Auth state - isAuthenticated:', isAuthenticated, 'userName:', userName, 'userEmail:', userEmail);
-
   // Tab state
   const [activeTab, setActiveTab] = useState<Tab>("convert");
 
@@ -56,7 +54,7 @@ export default function App() {
           {/* Header for History Tab */}
           <header className="app-header">
             <div>
-              <h1>🎨 GenUI</h1>
+              <h1>GenUI</h1>
               <p className="tagline">Extract styles, generate code</p>
             </div>
             <div style={{
@@ -66,7 +64,7 @@ export default function App() {
               fontSize: '14px',
             }}>
               <span style={{ color: '#666', fontWeight: '500' }}>
-                👤 {userName || userEmail?.split('@')[0] || 'User'}
+                {userName || userEmail?.split('@')[0] || 'User'}
               </span>
               <button
                 onClick={logout}

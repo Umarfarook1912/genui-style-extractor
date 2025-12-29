@@ -62,7 +62,7 @@ export function ExtractionModal({
             lineHeight: '1',
           }}
         >
-          ✕
+          ×
         </button>
 
         <h3
@@ -97,7 +97,7 @@ export function ExtractionModal({
               width: '100%',
             }}
           >
-            <span style={{ fontSize: '20px' }}>☑</span>
+            <span style={{ width: 20 }} />
             <span>Extract from Web</span>
           </button>
 
@@ -121,7 +121,7 @@ export function ExtractionModal({
               width: '100%',
             }}
           >
-            <span style={{ fontSize: '20px' }}>🖼</span>
+            <span style={{ width: 20 }} />
             <span>Upload Image</span>
           </button>
 
@@ -145,7 +145,7 @@ export function ExtractionModal({
               width: '100%',
             }}
           >
-            <span style={{ fontSize: '20px' }}>🎨</span>
+            <span style={{ width: 20 }} />
             <span>Figma Plugin</span>
           </button>
         </div>
