@@ -29,7 +29,11 @@ interface HistoryResponse {
   };
 }
 
-export function History() {
+interface HistoryProps {
+  onBack?: () => void;
+}
+
+export function History({ onBack }: HistoryProps) {
   const [history, setHistory] = useState<ConversionRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +60,14 @@ export function History() {
       const result: HistoryResponse = await response.json();
 
       if (result.success) {
-        setHistory(result.data || []);
+        // Ensure newest items appear first by sorting on created_time (descending)
+        const items = result.data || [];
+        items.sort((a, b) => {
+          const ta = new Date(a.created_time).getTime();
+          const tb = new Date(b.created_time).getTime();
+          return tb - ta;
+        });
+        setHistory(items);
       } else {
         setError(result.message || 'Failed to fetch history');
       }
@@ -101,7 +112,7 @@ export function History() {
 
   if (loading) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
+      <div className="history-loading">
         <Loader text="Loading your conversion history..." />
       </div>
     );
@@ -109,14 +120,12 @@ export function History() {
 
   if (error) {
     return (
-      <Card style={{ margin: '20px' }}>
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <p style={{ color: '#ef4444', marginBottom: '16px' }}>
-            Error: {error}
-          </p>
-          <Button onClick={fetchHistory} variant="primary">
-            Retry
-          </Button>
+      <Card className="history-error">
+        <div>
+          <p className="history-error-text">Error: {error}</p>
+          <div style={{ textAlign: 'center' }}>
+            <Button onClick={fetchHistory} variant="primary">Retry</Button>
+          </div>
         </div>
       </Card>
     );
@@ -124,116 +133,65 @@ export function History() {
 
   if (history.length === 0) {
     return (
-      <Card style={{ margin: '20px', textAlign: 'center', padding: '40px' }}>
-        <div style={{ fontSize: '48px', marginBottom: '16px' }} />
-        <h3 style={{ marginBottom: '8px' }}>No conversion history yet</h3>
-        <p style={{ color: '#666', fontSize: '14px' }}>
-          Start by extracting and converting some styles!
-        </p>
+      <Card className="history-empty">
+        <div className="history-empty-icon" />
+        <h3>No conversion history yet</h3>
+        <p>Start by extracting and converting some styles!</p>
       </Card>
     );
   }
 
   return (
-    <div style={{ padding: '20px' }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '16px',
-      }}>
-        <h2 style={{ margin: 0, fontSize: '20px' }}>
-          Your Conversions ({history.length})
-        </h2>
-        <Button onClick={fetchHistory} variant="secondary" style={{
-          padding: '6px 12px',
-          fontSize: '13px',
-        }}>
-          Refresh
-        </Button>
+    <div className="history-container">
+      <div className="history-back-row">
+        <div className="back-link" onClick={() => onBack && onBack()}>
+          ← Back to Convert
+        </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div className="history-header-row">
+        <h2 className="history-title">Conversion History <span className="history-count">({history.length})</span></h2>
+        <button className="icon-btn" aria-label="Refresh history" onClick={fetchHistory}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 12a9 9 0 10-3.16 6.31" stroke="#06b6d4" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M21 3v6h-6" stroke="#06b6d4" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="history-list">
         {history.map((record) => (
-          <Card key={record.id} style={{ padding: '16px' }}>
-            {/* Header */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '12px',
-                cursor: 'pointer',
-              }}
-              onClick={() => toggleExpand(record.id)}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Card key={record.id} className="conversion-card">
+            <div className="conversion-card-header" onClick={() => toggleExpand(record.id)}>
+              <div className="conversion-card-left">
                 <span
-                  style={{
-                    backgroundColor: getFormatBadgeColor(record.format),
-                    color: 'white',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                  }}
+                  className="format-badge"
+                  style={{ backgroundColor: getFormatBadgeColor(record.format) }}
                 >
                   {record.format}
                 </span>
-                <span style={{ fontSize: '13px', color: '#666' }}>
-                  {formatDate(record.created_time)}
-                </span>
+                <span className="conversion-date">{formatDate(record.created_time)}</span>
               </div>
-              <span style={{ fontSize: '18px' }}>
-                {expandedId === record.id ? '▼' : '▶'}
-              </span>
+              <div className="conversion-expand">{expandedId === record.id ? '▼' : '▶'}</div>
             </div>
 
-            {/* Code Preview (Collapsed) */}
             {expandedId !== record.id && (
-              <div
-                style={{
-                  backgroundColor: '#f7fafc',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  fontSize: '13px',
-                  fontFamily: 'monospace',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  color: '#4a5568',
-                }}
-              >
+              <div className="chat-bubble preview">
                 {record.output_code.split('\n')[0]}...
               </div>
             )}
 
-            {/* Expanded Content */}
             {expandedId === record.id && (
-              <div style={{ marginTop: '12px' }}>
-                <h4 style={{ fontSize: '14px', marginBottom: '8px' }}>
-                  Generated Code:
-                </h4>
-                <CodeBlock code={record.output_code} language={record.format} />
+              <div className="conversion-expanded">
+                <h4>Generated Code:</h4>
+                <div className="chat-bubble large">
+                  <CodeBlock code={record.output_code} language={record.format} />
+                </div>
 
                 {record.input_styles && (
                   <>
-                    <h4 style={{ fontSize: '14px', marginTop: '16px', marginBottom: '8px' }}>
-                      Input Styles:
-                    </h4>
-                    <div
-                      style={{
-                        backgroundColor: '#f7fafc',
-                        padding: '12px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontFamily: 'monospace',
-                        maxHeight: '200px',
-                        overflow: 'auto',
-                        color: '#4a5568',
-                      }}
-                    >
+                    <h4 className="input-styles-title">Input Styles:</h4>
+                    <div className="input-styles-block">
                       {record.input_styles}
                     </div>
                   </>

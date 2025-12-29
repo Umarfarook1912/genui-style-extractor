@@ -103,13 +103,15 @@ export function FigmaJsonInput({ onStylesExtracted }: FigmaJsonInputProps) {
             </div>
             <div style={{ marginBottom: '16px' }}>
                 <textarea
-                    placeholder='Paste your Figma JSON here...\n\nExample:\n{\n  "source": "figma",\n  "nodes": [...]\n}'
+                    placeholder='Paste your Figma JSON here...'
                     style={{
                         width: '100%',
                         minHeight: '120px',
                         padding: '12px',
                         borderRadius: '8px',
                         border: '1px solid #e5e7eb',
+                        background: '#fff',
+                        color: '#333',
                         fontFamily: 'monospace',
                         fontSize: '13px',
                         resize: 'vertical'

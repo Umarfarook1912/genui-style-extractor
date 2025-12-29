@@ -16,7 +16,7 @@ export function BackButton({ onClick, label = "Back to Start" }: BackButtonProps
             style={{
                 background: 'none',
                 border: 'none',
-                color: theme.colors.primary.main,
+                color: theme.colors.primary.button,
                 cursor: 'pointer',
                 fontSize: '14px',
                 padding: '8px 0',

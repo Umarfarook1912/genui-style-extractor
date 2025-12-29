@@ -7,6 +7,7 @@ export const theme = {
   // Primary brand colors - Teal/Cyan gradient
   colors: {
     primary: {
+      button:'#ffffff',
       main: '#06b6d4',
       dark: '#0891b2',
       gradient: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',

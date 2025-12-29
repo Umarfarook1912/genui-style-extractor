@@ -11,6 +11,7 @@ import { Loader } from "./Loader";
 import { ImageUpload } from "./ImageUpload";
 import { ExtractionModal } from "./ExtractionModal";
 import { BackButton } from "./BackButton";
+import { SavedNotice } from "./SavedNotice";
 import { WelcomeCard } from "./WelcomeCard";
 import { FigmaJsonInput } from "./FigmaJsonInput";
 import { StylesGrid } from "./StylesGrid";
@@ -533,9 +534,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
                       {isSaving ? "Saving..." : isSaved ? "Saved" : "Save to History"}
                     </Button>
                     {isSaved && (
-                      <span style={{ color: '#10b981', fontSize: '14px' }}>
-                        Saved successfully!
-                      </span>
+                      <SavedNotice>Saved successfully!</SavedNotice>
                     )}
                   </div>
                 </Card>

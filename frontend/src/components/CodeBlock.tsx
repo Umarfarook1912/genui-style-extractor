@@ -32,14 +32,17 @@ export const CodeBlock = ({
 
     return (
         <div className={`code-block ${className}`}>
-            {showCopy && (
-                <div className="code-block-header">
+            <div className="code-block-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span className="code-block-language">{language}</span>
-                    <button className="btn btn-small copy-btn" onClick={handleCopy}>
+                </div>
+                {showCopy && (
+                    <button className="btn btn-small copy-btn" onClick={handleCopy} aria-label="Copy code">
                         {copied ? "Copied!" : "Copy"}
                     </button>
-                </div>
-            )}
+                )}
+            </div>
+
             <pre className="code-output">
                 <code>{code}</code>
             </pre>

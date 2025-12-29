@@ -82,27 +82,7 @@ export default function App() {
               </button>
             </div>
           </header>
-          <History />
-
-          {/* Back to Convert Button */}
-          <div style={{ padding: '20px', textAlign: 'center' }}>
-            <button
-              onClick={() => setActiveTab('convert')}
-              style={{
-                padding: '12px 24px',
-                background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600',
-                boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)',
-              }}
-            >
-              ← Back to Convert
-            </button>
-          </div>
+          <History onBack={() => setActiveTab('convert')} />
         </>
       )}
 
