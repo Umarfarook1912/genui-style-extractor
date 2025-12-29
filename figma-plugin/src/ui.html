@@ -14,7 +14,7 @@
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       padding: 16px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
       min-height: 100vh;
       color: #333;
     }
@@ -38,7 +38,7 @@
     .logo {
       width: 32px;
       height: 32px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -80,10 +80,12 @@
 
     .format-buttons {
       display: none;
-      grid-template-columns: repeat(3, 1fr);
+      /* allow columns to shrink on narrow viewports to avoid overflow */
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
       margin-top: 12px;
       margin-bottom: 12px;
+      width: 100%;
     }
 
     .format-buttons.visible {
@@ -170,20 +172,27 @@
       color: #555;
     }
 
+    /* ensure format buttons can shrink and fill their grid cell without forcing container width */
+    .format-btn {
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
     .format-btn:hover {
-      border-color: #667eea;
-      background: #f8f9ff;
+      border-color: #06b6d4;
+      background: #f0fdff;
     }
 
     .format-btn.active {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
       color: white;
-      border-color: #667eea;
+      border-color: #06b6d4;
     }
 
     button {
-      flex: 1;
-      padding: 12px 20px;
+      padding: 10px 16px;
       border: none;
       border-radius: 8px;
       font-size: 14px;
@@ -191,6 +200,8 @@
       cursor: pointer;
       transition: all 0.2s;
       font-family: inherit;
+      width: auto;
+      min-width: 110px;
     }
 
     button:hover {
@@ -203,12 +214,12 @@
     }
 
     .primary-btn {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
       color: white;
     }
 
     .primary-btn:hover {
-      background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+      background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
     }
 
     .primary-btn:disabled {
@@ -219,12 +230,12 @@
 
     .secondary-btn {
       background: white;
-      color: #667eea;
-      border: 2px solid #667eea;
+      color: #06b6d4;
+      border: 2px solid #06b6d4;
     }
 
     .secondary-btn:hover {
-      background: #f0f2ff;
+      background: #f0fdff;
     }
 
     .secondary-btn:disabled {
@@ -279,12 +290,13 @@
     }
 
     .error-message {
-      background: #fee;
-      color: #c33;
+      background: #fee2e2;
+      color: #ef4444;
       padding: 12px;
       border-radius: 8px;
       margin-bottom: 16px;
       font-size: 13px;
+      font-weight: 600;
       display: none;
     }
 
@@ -293,12 +305,13 @@
     }
 
     .success-message {
-      background: #efe;
-      color: #393;
+      background: #d1fae5;
+      color: #10b981;
       padding: 12px;
       border-radius: 8px;
       margin-bottom: 16px;
       font-size: 13px;
+      font-weight: 600;
       display: none;
     }
 
@@ -319,7 +332,7 @@
       display: none;
       text-align: center;
       padding: 20px;
-      color: #667eea;
+      color: #06b6d4;
       font-size: 14px;
     }
 
@@ -332,7 +345,7 @@
       width: 20px;
       height: 20px;
       border: 3px solid #f3f3f3;
-      border-top: 3px solid #667eea;
+      border-top: 3px solid #06b6d4;
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin-right: 8px;
@@ -377,10 +390,10 @@
 
     <div class="button-group">
       <button class="primary-btn" id="extractBtn">
-        🎨 Extract Styles
+        Extract Styles
       </button>
       <button class="secondary-btn" id="copyBtn" disabled>
-        📋 Copy JSON
+        Copy JSON
       </button>
     </div>
 
@@ -393,7 +406,7 @@
 
       <div id="downloadContainer" style="margin-top:8px; display:none;">
         <button class="secondary-btn" id="downloadBtn">
-          💾 Download JSON
+          Download JSON
         </button>
       </div>
 
@@ -410,15 +423,15 @@
         </div>
       </div>
 
-      <button class="primary-btn" id="convertBtn" disabled style="width: 100%; margin-top: 8px;">
-        ⚡ Convert to Selected Format
+      <button class="primary-btn" id="convertBtn" disabled style="margin-top: 8px;">
+        Convert to Selected Format
       </button>
 
       <div class="converted-output" id="convertedOutput">
         <div class="converted-header">
           <h4>Converted Code</h4>
           <button class="secondary-btn" id="copyConvertedBtn" style="padding: 6px 12px; font-size: 12px;">
-            📋 Copy
+            Copy
           </button>
         </div>
         <div class="converted-code" id="convertedCode"></div>
@@ -426,7 +439,7 @@
     </div>
 
     <div class="footer">
-      Made with ❤️ for Zoho Hackathon
+      GenUI Style Extractor
     </div>
   </div>
 
@@ -486,7 +499,7 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        showSuccess('✅ JSON file downloaded!');
+        showSuccess('JSON file downloaded!');
       }
     };
 
@@ -530,7 +543,7 @@
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-      showSuccess('✅ Converted code copied to clipboard!');
+      showSuccess('Converted code copied to clipboard!');
     };
 
     convertBtn.onclick = () => {
@@ -568,7 +581,7 @@
         document.execCommand('copy');
         document.body.removeChild(textarea);
 
-        showSuccess('✅ JSON copied to clipboard!');
+        showSuccess('JSON copied to clipboard!');
       }
     };
 
@@ -601,13 +614,13 @@
         const nodeCount = msg.data.nodes.length;
         stats.textContent = `${nodeCount} layer${nodeCount > 1 ? 's' : ''} extracted`;
 
-        showSuccess('✅ Styles extracted successfully!');
+        showSuccess('Styles extracted successfully!');
       } else if (msg.type === 'conversion-complete') {
         const code = msg.code;
         convertedCode.textContent = code;
         convertedOutput.classList.add('visible');
 
-        showSuccess(`✅ Converted to ${selectedFormat.toUpperCase()}!`);
+        showSuccess(`Converted to ${selectedFormat.toUpperCase()}!`);
       } else if (msg.type === 'error') {
         showError(msg.message);
         outputSection.classList.remove('visible');
