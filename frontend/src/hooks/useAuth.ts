@@ -43,16 +43,19 @@ export function useAuth() {
 
   const checkAuthStatus = useCallback(async () => {
     try {
+      console.log('🔍 [AUTH] Starting auth check...');
       setAuthState(prev => ({ ...prev, isLoading: true }));
 
       // Verify auth by calling a protected endpoint using Catalyst cookies.
-      // Note: getHistory currently returns a friendly message when not logged in.
-      const response = await fetch(`${API_BASE_URL}/server/getHistory/?limit=1`, {
+      const response = await fetch(`${API_BASE_URL}/server/getHistory/?limit=1&userInfo=true`, {
         method: 'GET',
         credentials: 'include',
       });
 
+      console.log('🔍 [AUTH] getHistory response status:', response.ok, response.status);
+
       if (!response.ok) {
+        console.log('❌ [AUTH] getHistory failed, user not authenticated');
         setAuthState({ isAuthenticated: false, isLoading: false, userEmail: undefined, userName: undefined });
         return;
       }
@@ -60,40 +63,46 @@ export function useAuth() {
       const result = await response.json().catch(() => null);
       const message = String(result?.message || '').toLowerCase();
       const looksUnauthed = message.includes('log in') || message.includes('login');
+      console.log('🔍 [AUTH] getHistory result:', result);
+      console.log('🔍 [AUTH] message:', message, 'looksUnauthed:', looksUnauthed);
 
-      // Try to fetch user info if authenticated
+      // Extract user info from the response
       let userEmail: string | undefined;
       let userName: string | undefined;
 
-      if (!looksUnauthed) {
-        try {
-          // Try to get user info from Catalyst user endpoint
-          const userResponse = await fetch(`${API_BASE_URL}/__catalyst/user/me`, {
-            method: 'GET',
-            credentials: 'include',
-          });
+      if (!looksUnauthed && result?.userInfo) {
+        const userData = result.userInfo;
+        console.log('📦 [AUTH] User Info from getHistory:', userData);
+        console.log('📦 [AUTH] Available fields:', userData ? Object.keys(userData) : 'none');
 
-          if (userResponse.ok) {
-            const userData = await userResponse.json().catch(() => null);
-            if (userData) {
-              userEmail = userData.email || userData.Email || userData.user_email;
-              userName = userData.name || userData.Name || userData.display_name || userData.first_name ||
-                (userData.email || userData.Email)?.split('@')[0];
-            }
-          }
-        } catch (err) {
-          console.log('Could not fetch user info:', err);
+        if (userData) {
+          userEmail = userData.email || userData.Email || userData.user_email;
+          console.log('📧 [AUTH] Extracted email:', userEmail);
+
+          // Priority: first_name > display_name > name > email username
+          userName = userData.first_name || userData.First_Name ||
+            userData.display_name || userData.Display_Name ||
+            userData.name || userData.Name ||
+            (userData.email || userData.Email)?.split('@')[0];
+
+          console.log('👤 [AUTH] Field check - first_name:', userData.first_name);
+          console.log('👤 [AUTH] Field check - First_Name:', userData.First_Name);
+          console.log('👤 [AUTH] Field check - display_name:', userData.display_name);
+          console.log('👤 [AUTH] Field check - name:', userData.name);
+          console.log('✅ [AUTH] Final extracted userName:', userName, 'userEmail:', userEmail);
         }
       }
 
-      setAuthState({
+      const finalAuthState = {
         isAuthenticated: !looksUnauthed,
         isLoading: false,
         userEmail,
         userName,
-      });
+      };
+      console.log('🎯 [AUTH] Setting final auth state:', finalAuthState);
+      setAuthState(finalAuthState);
     } catch (error) {
-      console.error('Auth check failed:', error);
+      console.error('❌ [AUTH] Auth check failed:', error);
       setAuthState({ isAuthenticated: false, isLoading: false, userEmail: undefined, userName: undefined });
     }
   }, []);

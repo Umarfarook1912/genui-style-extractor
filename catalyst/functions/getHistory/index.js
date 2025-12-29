@@ -62,8 +62,9 @@ module.exports = (req, res) => {
     const limit = parseInt(url.searchParams.get('limit')) || 10;
     const offset = parseInt(url.searchParams.get('offset')) || 0;
     const format = url.searchParams.get('format'); // Optional filter
+    const returnUserInfo = url.searchParams.get('userInfo') === 'true'; // Return user info if requested
 
-    getConversionHistory(req, limit, offset, format)
+    getConversionHistory(req, limit, offset, format, returnUserInfo)
         .then(result => {
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify(result));
@@ -83,10 +84,10 @@ module.exports = (req, res) => {
 /**
  * Fetch conversion history from Datastore
  */
-async function getConversionHistory(req, limit, offset, formatFilter) {
+async function getConversionHistory(req, limit, offset, formatFilter, returnUserInfo = false) {
     try {
         console.log('🔵 getHistory: Starting fetch operation...');
-        console.log('🔵 Params:', { limit, offset, formatFilter });
+        console.log('🔵 Params:', { limit, offset, formatFilter, returnUserInfo });
 
         const catalystApp = catalyst.initialize(req);
         const table = catalystApp.datastore().table('ConversionHistory');
@@ -96,6 +97,33 @@ async function getConversionHistory(req, limit, offset, formatFilter) {
         // Get authenticated user ID
         const userId = await getAuthenticatedUserId(catalystApp);
         console.log('🔵 User ID:', userId);
+
+        // Get user information if requested
+        let userInfo = null;
+        if (returnUserInfo) {
+            try {
+                const userManagement = catalystApp.userManagement();
+                const currentUser = await userManagement.getCurrentUser();
+                console.log('📦 getHistory - User Info:', JSON.stringify(currentUser, null, 2));
+
+                if (currentUser) {
+                    userInfo = {
+                        user_id: currentUser.user_id || currentUser.id || currentUser.zaaid || currentUser.ROWID,
+                        email: currentUser.email_id || currentUser.email || currentUser.Email,
+                        first_name: currentUser.first_name || currentUser.First_Name || currentUser.firstname,
+                        last_name: currentUser.last_name || currentUser.Last_Name || currentUser.lastname,
+                        display_name: currentUser.display_name || currentUser.Display_Name,
+                        name: currentUser.name || currentUser.Name,
+                        org_id: currentUser.org_id || currentUser.Org_ID,
+                        zuid: currentUser.zuid || currentUser.ZUID,
+                        created_time: currentUser.created_time || currentUser.Created_Time
+                    };
+                    console.log('✅ getHistory - Processed user info:', userInfo);
+                }
+            } catch (err) {
+                console.log('⚠️ Could not fetch user info:', err.message);
+            }
+        }
 
         // For development: Show all records if no user is authenticated
         // In production, you might want to restrict this
@@ -155,7 +183,7 @@ async function getConversionHistory(req, limit, offset, formatFilter) {
 
         console.log('✅ getHistory: Success, returning', conversions.length, 'records');
 
-        return {
+        const response = {
             success: true,
             data: conversions,
             pagination: {
@@ -165,6 +193,13 @@ async function getConversionHistory(req, limit, offset, formatFilter) {
                 hasMore: offset + limit < total
             }
         };
+
+        // Include user info if requested
+        if (returnUserInfo && userInfo) {
+            response.userInfo = userInfo;
+        }
+
+        return response;
 
     } catch (error) {
         console.error('❌ Datastore query error:', error);

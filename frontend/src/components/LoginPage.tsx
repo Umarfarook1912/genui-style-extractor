@@ -20,29 +20,33 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      minHeight: '100vh',
-      padding: '20px',
+      minHeight: '600px',
+      maxHeight: '100vh',
+      padding: '15px',
       background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+      overflow: 'auto',
     }}>
       <Card style={{
-        maxWidth: '450px',
+        maxWidth: '380px',
         width: '100%',
         textAlign: 'center',
-        padding: '40px 30px',
+        padding: '25px 20px',
+        maxHeight: '90vh',
+        overflow: 'visible',
       }}>
         {/* Logo/Icon */}
         <div style={{
-          fontSize: '64px',
-          marginBottom: '20px',
+          fontSize: '48px',
+          marginBottom: '12px',
         }}>
           🎨
         </div>
 
         {/* Title */}
         <h1 style={{
-          fontSize: '28px',
+          fontSize: '24px',
           fontWeight: 'bold',
-          marginBottom: '10px',
+          marginBottom: '8px',
           color: '#1a202c',
         }}>
           Welcome to GenUI
@@ -50,10 +54,10 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
 
         {/* Subtitle */}
         <p style={{
-          fontSize: '16px',
+          fontSize: '14px',
           color: '#718096',
-          marginBottom: '30px',
-          lineHeight: '1.5',
+          marginBottom: '20px',
+          lineHeight: '1.4',
         }}>
           Your AI-powered style extractor and code generator.
           Sign in to use GenUI and see your own history.
@@ -62,24 +66,25 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
         {/* Features List */}
         <div style={{
           textAlign: 'left',
-          marginBottom: '30px',
-          padding: '20px',
+          marginBottom: '20px',
+          padding: '15px',
           background: '#f7fafc',
           borderRadius: '8px',
         }}>
           <h3 style={{
-            fontSize: '14px',
+            fontSize: '13px',
             fontWeight: '600',
-            marginBottom: '12px',
+            marginBottom: '10px',
             color: '#2d3748',
           }}>
             ✨ What you'll get:
           </h3>
           <ul style={{
-            fontSize: '14px',
+            fontSize: '13px',
             color: '#4a5568',
-            lineHeight: '1.8',
+            lineHeight: '1.6',
             paddingLeft: '20px',
+            margin: 0,
           }}>
             <li>Extract styles from any element</li>
             <li>Convert to Tailwind, CSS, or JSX</li>
@@ -94,15 +99,15 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
           disabled={isLoading}
           style={{
             width: '100%',
-            padding: '14px',
-            fontSize: '16px',
+            padding: '12px',
+            fontSize: '15px',
             fontWeight: '600',
             background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
             border: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '10px',
+            gap: '8px',
           }}
         >
           {isLoading ? (
@@ -131,8 +136,8 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
-            marginTop: '14px',
-            gap: '10px',
+            marginTop: '12px',
+            gap: '8px',
           }}>
             <Button
               onClick={onSignup}
@@ -163,9 +168,10 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
 
         {/* Footer */}
         <p style={{
-          fontSize: '12px',
+          fontSize: '11px',
           color: '#a0aec0',
-          marginTop: '20px',
+          marginTop: '15px',
+          marginBottom: 0,
         }}>
           By signing in, you agree to our Terms of Service and Privacy Policy
         </p>

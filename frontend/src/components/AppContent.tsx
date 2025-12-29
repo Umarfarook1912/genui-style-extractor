@@ -28,6 +28,8 @@ interface AppContentProps {
 }
 
 export function AppContent({ onLogout, userEmail, userName, onViewHistory }: AppContentProps) {
+  console.log('🎨 [AppContent] Received props - userName:', userName, 'userEmail:', userEmail);
+
   // State management
   const [showModal, setShowModal] = useState(false);
   const [inputMode, setInputMode] = useState<InputMode>("extract");
@@ -349,8 +351,8 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
           gap: '12px',
           fontSize: '14px',
         }}>
-          <span style={{ color: theme.colors.text.secondary }}>
-            👤 {userName || userEmail || 'User'}
+          <span style={{ color: theme.colors.text.secondary, fontWeight: '500' }}>
+            👤 {userName || userEmail?.split('@')[0] || 'User'}
           </span>
           <Button onClick={onLogout} variant="secondary" style={{
             padding: '6px 12px',

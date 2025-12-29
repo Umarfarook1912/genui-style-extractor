@@ -17,6 +17,8 @@ export default function App() {
   // Authentication
   const { isAuthenticated, isLoading: authLoading, login, signup, resetPassword, logout, userEmail, userName } = useAuth();
 
+  console.log('🎨 [APP] Auth state - isAuthenticated:', isAuthenticated, 'userName:', userName, 'userEmail:', userEmail);
+
   // Tab state
   const [activeTab, setActiveTab] = useState<Tab>("convert");
 
@@ -63,8 +65,8 @@ export default function App() {
               gap: '12px',
               fontSize: '14px',
             }}>
-              <span style={{ color: '#666' }}>
-                👤 {userName || userEmail || 'User'}
+              <span style={{ color: '#666', fontWeight: '500' }}>
+                👤 {userName || userEmail?.split('@')[0] || 'User'}
               </span>
               <button
                 onClick={logout}

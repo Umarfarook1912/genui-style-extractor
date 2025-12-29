@@ -1,0 +1,9 @@
+{
+    "name": "getUserInfo",
+    "version": "1.0.0",
+    "description": "Get authenticated user information",
+    "main": "index.js",
+    "dependencies": {
+        "zcatalyst-sdk-node": "^2.0.0"
+    }
+}
