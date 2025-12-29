@@ -10,10 +10,14 @@ import { CodeBlock } from "./CodeBlock";
 import { Loader } from "./Loader";
 import { ImageUpload } from "./ImageUpload";
 import { ExtractionModal } from "./ExtractionModal";
+import { BackButton } from "./BackButton";
+import { WelcomeCard } from "./WelcomeCard";
+import { FigmaJsonInput } from "./FigmaJsonInput";
+import { StylesGrid } from "./StylesGrid";
+import { FormatSelector } from "./FormatSelector";
 import { useConvertStyles } from "../hooks/useConvertStyles";
 import { useImageAnalysis } from "../hooks/useImageAnalysis";
 import { CATALYST_SAVE_CONVERSION_URL } from "../constants/api";
-import { theme } from "../theme";
 import type { DesignJson } from "../hooks/useImageAnalysis";
 
 type Styles = Record<string, string>;
@@ -336,6 +340,23 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
 
   const output = data?.code || data?.output || "";
 
+  // Reset to start handler
+  const handleResetToStart = () => {
+    setInputMode('extract');
+    setStyles(null);
+    setDesignJson(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
+    }
+  };
+
+  // Handle Figma JSON parsing
+  const handleFigmaStylesExtracted = (stylesFromFigma: Styles, figmaData: any) => {
+    setDesignJson(figmaData);
+    setStyles(stylesFromFigma);
+  };
+
   return (
     <>
       {/* Header */}
@@ -350,12 +371,13 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
           gap: '12px',
           fontSize: '14px',
         }}>
-          <span style={{ color: theme.colors.text.secondary, fontWeight: '500' }}>
+          <span style={{ color: '#666', fontWeight: '500' }}>
             {userName || userEmail?.split('@')[0] || 'User'}
           </span>
-          <Button onClick={onLogout} variant="secondary" style={{
+          <Button onClick={onLogout} variant="secondary" className="btn-small" style={{
             padding: '6px 12px',
             fontSize: '13px',
+            width: 'auto'
           }}>
             Logout
           </Button>
@@ -365,41 +387,10 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
       {/* Main Content */}
       <div className="content">
         {!styles && !extracting && !isAnalyzing && !showModal && inputMode === 'extract' && (
-          <>
-            {/* Welcome Screen with Extraction Button */}
-            <Card className="mode-selector">
-              <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <h2 style={{ marginBottom: '16px', fontSize: '20px' }}>Welcome!</h2>
-                <p style={{ marginBottom: '24px', color: '#666', lineHeight: '1.6' }}>
-                  Start extracting styles from websites, images, or Figma designs
-                </p>
-                <Button
-                  onClick={() => setShowModal(true)}
-                  variant="primary"
-                  style={{ fontSize: '15px', padding: '12px 24px' }}
-                >
-                  Start Extraction
-                </Button>
-                {onViewHistory && (
-                  <div style={{ marginTop: '20px' }}>
-                    <button
-                      onClick={onViewHistory}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: theme.colors.primary.main,
-                        cursor: 'pointer',
-                        textDecoration: 'underline',
-                        fontSize: '14px'
-                      }}
-                    >
-                      View History
-                    </button>
-                  </div>
-                )}
-              </div>
-            </Card>
-          </>
+          <WelcomeCard
+            onStartExtraction={() => setShowModal(true)}
+            onViewHistory={onViewHistory}
+          />
         )}
 
         {!styles && !extracting && !isAnalyzing && (inputMode === 'upload' || inputMode === 'figma') && (
@@ -407,30 +398,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
             {/* Input Mode Display */}
             <Card className="mode-selector">
               <div style={{ marginBottom: '16px' }}>
-                <button
-                  onClick={() => {
-                    setInputMode('extract');
-                    setStyles(null);
-                    setDesignJson(null);
-                    if (imagePreview) {
-                      URL.revokeObjectURL(imagePreview);
-                      setImagePreview(null);
-                    }
-                  }}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: theme.colors.primary.main,
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    padding: '8px 0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  ← Back to Start
-                </button>
+                <BackButton onClick={handleResetToStart} />
               </div>
               {inputMode === 'upload' ? (
                 <ImageUpload
@@ -439,121 +407,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
                   previewUrl={imagePreview}
                 />
               ) : (
-                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>Figma Plugin</h3>
-                  <p style={{ marginBottom: '16px', color: '#666', lineHeight: '1.6' }}>
-                    Extract design styles directly from Figma using our plugin
-                  </p>
-                  <div style={{
-                    background: '#f9fafb',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    padding: '16px',
-                    marginBottom: '16px',
-                    textAlign: 'left'
-                  }}>
-                    <strong style={{ display: 'block', marginBottom: '8px' }}>Setup Instructions:</strong>
-                    <ol style={{ fontSize: '14px', lineHeight: '1.8', paddingLeft: '20px' }}>
-                      <li>Open Figma Desktop or Web App</li>
-                      <li>Go to <strong>Plugins → Development → Import plugin from manifest</strong></li>
-                      <li>Navigate to: <code style={{
-                        background: '#fff',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        fontSize: '12px'
-                      }}>figma-plugin/dist/manifest.json</code></li>
-                      <li>Select your design layers in Figma</li>
-                      <li>Run the plugin and click "Extract Styles"</li>
-                      <li>Copy the JSON and paste it here</li>
-                    </ol>
-                  </div>
-                  <div style={{ marginBottom: '16px' }}>
-                    <textarea
-                      placeholder='Paste your Figma JSON here...\n\nExample:\n{\n  "source": "figma",\n  "nodes": [...]\n}'
-                      style={{
-                        width: '100%',
-                        minHeight: '120px',
-                        padding: '12px',
-                        borderRadius: '8px',
-                        border: '1px solid #e5e7eb',
-                        fontFamily: 'monospace',
-                        fontSize: '13px',
-                        resize: 'vertical'
-                      }}
-                      id="figmaJsonInput"
-                    />
-                  </div>
-                  <Button
-                    onClick={() => {
-                      const textarea = document.getElementById('figmaJsonInput') as HTMLTextAreaElement;
-                      const jsonText = textarea?.value.trim();
-
-                      if (!jsonText) {
-                        alert('Please paste Figma JSON first');
-                        return;
-                      }
-
-                      try {
-                        const figmaData = JSON.parse(jsonText);
-
-                        if (!figmaData.source || figmaData.source !== 'figma' || !figmaData.nodes) {
-                          throw new Error('Invalid Figma JSON structure');
-                        }
-
-                        // Convert Figma JSON to styles format
-                        const firstNode = figmaData.nodes[0];
-                        const stylesFromFigma: Styles = {
-                          tagName: firstNode.nodeType,
-                          className: firstNode.name
-                        };
-
-                        // Extract layout
-                        if (firstNode.layout) {
-                          if (firstNode.layout.width) stylesFromFigma.width = `${firstNode.layout.width}px`;
-                          if (firstNode.layout.height) stylesFromFigma.height = `${firstNode.layout.height}px`;
-                        }
-
-                        // Extract colors
-                        if (firstNode.colors?.fills?.[0]) {
-                          stylesFromFigma.backgroundColor = firstNode.colors.fills[0];
-                        }
-                        if (firstNode.colors?.strokes?.[0]) {
-                          stylesFromFigma.borderColor = firstNode.colors.strokes[0];
-                        }
-
-                        // Extract typography
-                        if (firstNode.typography) {
-                          if (firstNode.typography.fontSize) stylesFromFigma.fontSize = `${firstNode.typography.fontSize}px`;
-                          if (firstNode.typography.fontFamily) stylesFromFigma.fontFamily = firstNode.typography.fontFamily;
-                          if (firstNode.typography.fontWeight) stylesFromFigma.fontWeight = String(firstNode.typography.fontWeight);
-                          if (firstNode.typography.lineHeight) stylesFromFigma.lineHeight = String(firstNode.typography.lineHeight);
-                        }
-
-                        // Extract spacing
-                        if (firstNode.spacing) {
-                          if (firstNode.spacing.paddingTop) stylesFromFigma.paddingTop = `${firstNode.spacing.paddingTop}px`;
-                          if (firstNode.spacing.paddingRight) stylesFromFigma.paddingRight = `${firstNode.spacing.paddingRight}px`;
-                          if (firstNode.spacing.paddingBottom) stylesFromFigma.paddingBottom = `${firstNode.spacing.paddingBottom}px`;
-                          if (firstNode.spacing.paddingLeft) stylesFromFigma.paddingLeft = `${firstNode.spacing.paddingLeft}px`;
-                          if (firstNode.spacing.borderRadius) stylesFromFigma.borderRadius = `${firstNode.spacing.borderRadius}px`;
-                        }
-
-                        // Store the full design JSON
-                        setDesignJson(figmaData);
-                        setStyles(stylesFromFigma);
-
-                      } catch (error) {
-                        alert(`Invalid JSON: ${(error as Error).message}`);
-                      }
-                    }}
-                    variant="primary"
-                  >
-                    Parse Figma JSON
-                  </Button>
-                  <p style={{ marginTop: '12px', fontSize: '12px', color: '#888' }}>
-                    Need help? Check the <strong>figma-plugin/README.md</strong> for detailed instructions
-                  </p>
-                </div>
+                <FigmaJsonInput onStylesExtracted={handleFigmaStylesExtracted} />
               )}
             </Card>
           </>
@@ -585,30 +439,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
           <>
             {/* Back to Start Link */}
             <div style={{ marginBottom: '16px' }}>
-              <button
-                onClick={() => {
-                  setInputMode('extract');
-                  setStyles(null);
-                  setDesignJson(null);
-                  if (imagePreview) {
-                    URL.revokeObjectURL(imagePreview);
-                    setImagePreview(null);
-                  }
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: theme.colors.primary.main,
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  padding: '8px 0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
-              >
-                ← Back to Start
-              </button>
+              <BackButton onClick={handleResetToStart} />
             </div>
 
             {(inputMode === 'upload' || inputMode === 'figma') && designJson && (
@@ -641,30 +472,7 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
             )}
 
             <Card title="Extracted Styles" className="styles-preview">
-              <div className="styles-grid">
-                <div>
-                  <strong>Size:</strong> {styles.width} × {styles.height}
-                </div>
-                <div>
-                  <strong>Color:</strong>{" "}
-                  <span style={{ color: styles.color }}>{styles.color}</span>
-                </div>
-                <div>
-                  <strong>Background:</strong>{" "}
-                  <span
-                    style={{
-                      backgroundColor: styles.backgroundColor,
-                      padding: "2px 8px",
-                      borderRadius: 4,
-                    }}
-                  >
-                    {styles.backgroundColor}
-                  </span>
-                </div>
-                <div>
-                  <strong>Font:</strong> {styles.fontSize} / {styles.fontWeight}
-                </div>
-              </div>
+              <StylesGrid styles={styles} />
             </Card>
 
             <Card title="Conversion Options" className="conversion-options">
@@ -682,46 +490,12 @@ export function AppContent({ onLogout, userEmail, userName, onViewHistory }: App
                   Open persistent window for extraction
                 </label>
               </div>
-              <div className="format-selector">
-                <label>
-                  <input
-                    type="radio"
-                    value="tailwind"
-                    checked={format === "tailwind"}
-                    onChange={(e) => setFormat(e.target.value as OutputFormat)}
-                  />
-                  Tailwind CSS
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    value="css"
-                    checked={format === "css"}
-                    onChange={(e) => setFormat(e.target.value as OutputFormat)}
-                  />
-                  CSS
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    value="jsx"
-                    checked={format === "jsx"}
-                    onChange={(e) => setFormat(e.target.value as OutputFormat)}
-                  />
-                  JSX Style
-                </label>
-              </div>
-
-              {format === "css" && (
-                <label className="checkbox">
-                  <input
-                    type="checkbox"
-                    checked={useRem}
-                    onChange={(e) => setUseRem(e.target.checked)}
-                  />
-                  Convert px to rem
-                </label>
-              )}
+              <FormatSelector
+                format={format}
+                useRem={useRem}
+                onFormatChange={setFormat}
+                onUseRemChange={setUseRem}
+              />
 
               <Button onClick={handleConvert} disabled={isPending} variant="primary">
                 {isPending ? "Converting..." : "Convert Styles"}

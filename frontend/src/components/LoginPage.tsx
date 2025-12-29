@@ -20,34 +20,35 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      minHeight: '600px',
-      maxHeight: '100vh',
-      padding: '15px',
+      minHeight: '100vh',
+      padding: '20px',
       background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-      overflow: 'auto',
     }}>
       <Card style={{
-        maxWidth: '380px',
+        maxWidth: '420px',
         width: '100%',
         textAlign: 'center',
-        padding: '25px 20px',
-        maxHeight: '90vh',
-        overflow: 'visible',
+        padding: '40px 30px',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
       }}>
-        {/* Logo/Icon */}
+        {/* Logo/Brand */}
         <div style={{
-          fontSize: '48px',
-          marginBottom: '12px',
+          fontSize: '42px',
+          marginBottom: '16px',
           fontWeight: 700,
+          background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
         }}>
           GenUI
         </div>
 
         {/* Title */}
         <h1 style={{
-          fontSize: '24px',
-          fontWeight: 'bold',
-          marginBottom: '8px',
+          fontSize: '28px',
+          fontWeight: '700',
+          marginBottom: '12px',
           color: '#1a202c',
         }}>
           Welcome to GenUI
@@ -55,35 +56,35 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
 
         {/* Subtitle */}
         <p style={{
-          fontSize: '14px',
+          fontSize: '15px',
           color: '#718096',
-          marginBottom: '20px',
-          lineHeight: '1.4',
+          marginBottom: '28px',
+          lineHeight: '1.6',
         }}>
-          Your AI-powered style extractor and code generator.
-          Sign in to use GenUI and see your own history.
+          Your AI-powered style extractor and code generator. Sign in to use GenUI and see your own history.
         </p>
 
         {/* Features List */}
         <div style={{
           textAlign: 'left',
-          marginBottom: '20px',
-          padding: '15px',
+          marginBottom: '28px',
+          padding: '20px',
           background: '#f7fafc',
-          borderRadius: '8px',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0',
         }}>
           <h3 style={{
-            fontSize: '13px',
+            fontSize: '14px',
             fontWeight: '600',
-            marginBottom: '10px',
+            marginBottom: '14px',
             color: '#2d3748',
           }}>
             What you'll get:
           </h3>
           <ul style={{
-            fontSize: '13px',
+            fontSize: '14px',
             color: '#4a5568',
-            lineHeight: '1.6',
+            lineHeight: '2',
             paddingLeft: '20px',
             margin: 0,
           }}>
@@ -100,8 +101,8 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
           disabled={isLoading}
           style={{
             width: '100%',
-            padding: '12px',
-            fontSize: '15px',
+            padding: '14px',
+            fontSize: '16px',
             fontWeight: '600',
             background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
             border: 'none',
@@ -109,6 +110,7 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
+            boxShadow: '0 4px 12px rgba(6, 182, 212, 0.4)',
           }}
         >
           {isLoading ? (
@@ -126,7 +128,8 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
           ) : (
             <>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+                <circle cx="12" cy="12" r="10" opacity="0.3"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
               </svg>
               <span>Login</span>
             </>
@@ -137,8 +140,8 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
-            marginTop: '12px',
-            gap: '8px',
+            marginTop: '16px',
+            gap: '12px',
           }}>
             <Button
               onClick={onSignup}
@@ -146,8 +149,8 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
               disabled={isLoading || !onSignup}
               style={{
                 flex: 1,
-                padding: '10px',
-                fontSize: '13px',
+                padding: '12px',
+                fontSize: '14px',
               }}
             >
               Sign up
@@ -158,8 +161,8 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
               disabled={isLoading || !onResetPassword}
               style={{
                 flex: 1,
-                padding: '10px',
-                fontSize: '13px',
+                padding: '12px',
+                fontSize: '14px',
               }}
             >
               Reset password
@@ -169,10 +172,11 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
 
         {/* Footer */}
         <p style={{
-          fontSize: '11px',
+          fontSize: '12px',
           color: '#a0aec0',
-          marginTop: '15px',
+          marginTop: '20px',
           marginBottom: 0,
+          lineHeight: '1.4',
         }}>
           By signing in, you agree to our Terms of Service and Privacy Policy
         </p>
