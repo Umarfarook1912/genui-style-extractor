@@ -86,19 +86,13 @@ export function FigmaJsonInput({ onStylesExtracted }: FigmaJsonInputProps) {
                 marginBottom: '16px',
                 textAlign: 'left'
             }}>
-                <strong style={{ display: 'block', marginBottom: '8px' }}>Setup Instructions:</strong>
+                <strong style={{ display: 'block', marginBottom: '8px' }}>Instructions:</strong>
                 <ol style={{ fontSize: '14px', lineHeight: '1.8', paddingLeft: '20px' }}>
-                    <li>Open Figma Desktop or Web App</li>
-                    <li>Go to <strong>Plugins → Development → Import plugin from manifest</strong></li>
-                    <li>Navigate to: <code style={{
-                        background: '#fff',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        fontSize: '12px'
-                    }}>figma-plugin/dist/manifest.json</code></li>
-                    <li>Select your design layers in Figma</li>
+                    <li>Open Figma Desktop or the Figma Web App</li>
+                    <li>Install the published plugin: <strong>Plugins → Browse Plugins</strong>, search for <em>GenUI_Style_Extractor</em> and select it</li>
+                    <li>Select the design layers you want to extract in Figma</li>
                     <li>Run the plugin and click "Extract Styles"</li>
-                    <li>Copy the JSON and paste it here</li>
+                    <li>Copy the generated JSON and paste it into the input box below</li>
                 </ol>
             </div>
             <div style={{ marginBottom: '16px' }}>
@@ -122,9 +116,6 @@ export function FigmaJsonInput({ onStylesExtracted }: FigmaJsonInputProps) {
             <Button onClick={handleParse} variant="primary">
                 Parse Figma JSON
             </Button>
-            <p style={{ marginTop: '12px', fontSize: '12px', color: '#888' }}>
-                Need help? Check the <strong>figma-plugin/README.md</strong> for detailed instructions
-            </p>
         </div>
     );
 }
