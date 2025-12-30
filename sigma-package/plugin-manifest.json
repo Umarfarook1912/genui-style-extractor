@@ -1,12 +1,25 @@
 {
-  "name": "GenUI Style Extractor",
-  "version": "1.0.0",
-  "description": "Extract UI styles and convert to Tailwind CSS",
-  "author": "Your Team",
-  "services": ["desk"],  
-  "entry": {
-    "web": {
-      "main": "app/index.html"
-    }
+  "connectors": [],
+  "whiteListedDomains": [],
+  "service": "PROJECTS",
+  "cspDomains": {
+    "connect-src": []
+  },
+  "storage": false,
+  "locale": [
+    "en"
+  ],
+  "config": [],
+  "modules": {
+    "functions": [],
+    "widgets": [
+      {
+        "name": "Projects Extension",
+        "location": "task_tab",
+        "url": "/app/index.html"
+      }
+    ],
+    "triggers": [],
+    "events": []
   }
 }
