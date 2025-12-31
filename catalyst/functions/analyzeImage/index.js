@@ -23,18 +23,18 @@ const { IncomingMessage, ServerResponse } = require("http");
  */
 async function analyzeWithOpenAI(base64Image, mimeType) {
 	// Check for API key in multiple possible environment variable names
-	const openaiApiKey = process.env.OPENAI_API_KEY || 
-	                     process.env.OPEN_API_KEY || 
-	                     process.env.OPENAI_KEY ||
-	                     process.env.API_KEY;
-	
+	const openaiApiKey = process.env.OPENAI_API_KEY ||
+		process.env.OPEN_API_KEY ||
+		process.env.OPENAI_KEY ||
+		process.env.API_KEY;
+
 	if (!openaiApiKey) {
 		console.log('❌ OpenAI API key not set in environment variables');
 		console.log('Available env vars:', Object.keys(process.env).filter(k => k.includes('OPENAI') || k.includes('OPEN_API') || k.includes('API_KEY')));
 		console.log('💡 Looking for: OPENAI_API_KEY, OPEN_API_KEY, OPENAI_KEY, or API_KEY');
 		return null;
 	}
-	
+
 	console.log('✅ OpenAI API key found (length:', openaiApiKey.length, 'chars)');
 	console.log('🔑 API key prefix:', openaiApiKey.substring(0, 10) + '...');
 
@@ -183,7 +183,7 @@ Return ONLY the JSON object. Be accurate and thorough.`
 			const errorText = await response.text();
 			console.error('❌ OpenAI API HTTP Error - Status:', response.status);
 			console.error('❌ OpenAI API Error Response:', errorText);
-			
+
 			// Try to parse error JSON for better error messages
 			try {
 				const errorJson = JSON.parse(errorText);
@@ -191,7 +191,7 @@ Return ONLY the JSON object. Be accurate and thorough.`
 					console.error('❌ OpenAI API Error Type:', errorJson.error.type);
 					console.error('❌ OpenAI API Error Message:', errorJson.error.message);
 					console.error('❌ OpenAI API Error Code:', errorJson.error.code);
-					
+
 					// Check for specific error types
 					if (errorJson.error.type === 'insufficient_quota' || errorJson.error.code === 'insufficient_quota') {
 						console.error('⚠️ INSUFFICIENT QUOTA - OpenAI account has no credits:');
@@ -209,13 +209,13 @@ Return ONLY the JSON object. Be accurate and thorough.`
 			} catch (e) {
 				console.error('❌ Could not parse error response as JSON');
 			}
-			
+
 			return null;
 		}
 
 		const data = await response.json();
 		const content = data.choices[0]?.message?.content;
-		
+
 		if (!content) {
 			return null;
 		}
@@ -254,12 +254,12 @@ function validateDesignJson(designJson) {
 			screenType: "portrait"
 		};
 	}
-	
+
 	// Ensure meta has section if missing
 	if (!designJson.meta.section) {
 		designJson.meta.section = "unknown";
 	}
-	
+
 	if (!designJson.colors) {
 		designJson.colors = {
 			background: "#ffffff",
@@ -267,7 +267,7 @@ function validateDesignJson(designJson) {
 			textPrimary: "#000000"
 		};
 	}
-	
+
 	if (!designJson.layout) {
 		designJson.layout = {
 			container: {
@@ -283,18 +283,18 @@ function validateDesignJson(designJson) {
 			}
 		};
 	}
-	
+
 	if (!designJson.components) {
 		designJson.components = [];
 	}
-	
+
 	if (!designJson.typography) {
 		designJson.typography = {
 			fontFamily: "System Default (estimated)",
 			baseFontSize: 16
 		};
 	}
-	
+
 	return designJson;
 }
 
@@ -416,10 +416,10 @@ module.exports = async (req, res) => {
 				res.write(JSON.stringify({
 					success: true,
 					designJson: validated,
-					message: quotaExceeded 
+					message: quotaExceeded
 						? 'Image analyzed with default structure (OpenAI quota exceeded - add credits at https://platform.openai.com/account/billing)'
 						: 'Image analyzed successfully',
-					warning: quotaExceeded 
+					warning: quotaExceeded
 						? 'OpenAI API quota exceeded. Using default structure. Add credits to enable AI-powered extraction.'
 						: undefined
 				}));

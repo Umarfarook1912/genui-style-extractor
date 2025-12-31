@@ -3,7 +3,9 @@
   "whiteListedDomains": [],
   "service": "PROJECTS",
   "cspDomains": {
-    "connect-src": ["https://genui-backend-908193831.development.catalystserverless.com"]
+    "connect-src": [
+      "https://genui-backend-908193831.development.catalystserverless.com"
+    ]
   },
   "storage": false,
   "locale": [
