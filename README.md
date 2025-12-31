@@ -336,3 +336,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 [⬆ Back to Top](#-genui---style-extractor--code-generator)
 
 </div>
+
+---
+
+## Privacy Policy
+
+GenUI does not store any personal user data. All processing is done within the Zoho platform. Any data required for functionality (such as conversion history) is stored and managed by your Zoho Catalyst backend according to your Catalyst configuration and policies.
+
+## Terms of Service
+
+This extension is provided as-is for internal and testing use. Use at your own risk. The authors provide no warranties and are not liable for any damages resulting from the use of this software.
+
