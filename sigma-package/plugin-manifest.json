@@ -1,27 +1,21 @@
 {
-  "connectors": [],
-  "whiteListedDomains": [],
-  "service": "PROJECTS",
-  "cspDomains": {
-    "connect-src": [
-      "https://genui-backend-908193831.development.catalystserverless.com"
-    ]
-  },
-  "storage": false,
-  "locale": [
-    "en"
-  ],
-  "config": [],
-  "modules": {
-    "functions": [],
-    "widgets": [
-      {
-        "name": "Projects Extension",
-        "location": "task_tab",
-        "url": "/app/index.html"
-      }
-    ],
-    "triggers": [],
-    "events": []
-  }
+    "connectors": [],
+    "whiteListedDomains": [],
+    "service": "PROJECTS",
+    "cspDomains": {
+        "connect-src": ["https://genui-backend-908193831.development.catalystserverless.com"]
+    },
+    "storage": false,
+    "locale": ["en"],
+    "config": [],
+    "modules": {
+        "functions": [],
+        "widgets": [{
+            "name": "Projects Extension",
+            "location": "project_tab",
+            "url": "/app/index.html"
+        }],
+        "triggers": [],
+        "events": []
+    }
 }
