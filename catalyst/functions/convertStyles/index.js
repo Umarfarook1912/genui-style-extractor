@@ -254,10 +254,12 @@ async function saveToDatastore(inputStyles, format, outputCode, userAgent = '', 
  * @param {ServerResponse} res 
  */
 module.exports = (req, res) => {
-	// Handle CORS
-	res.setHeader('Access-Control-Allow-Origin', '*');
+	// Handle CORS with credentials support
+	const origin = req.headers.origin || req.headers.referer || '*';
+	res.setHeader('Access-Control-Allow-Origin', origin);
 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
 	res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+	res.setHeader('Access-Control-Allow-Credentials', 'true');
 
 	// Handle OPTIONS request
 	if (req.method === 'OPTIONS') {
