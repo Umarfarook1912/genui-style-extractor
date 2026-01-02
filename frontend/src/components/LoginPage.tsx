@@ -25,16 +25,16 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
       background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
     }}>
       <Card style={{
-        maxWidth: '420px',
+        maxWidth: '350px',
         width: '100%',
         textAlign: 'center',
-        padding: '40px 30px',
+        padding: '25px 20px',
         boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
       }}>
         {/* Logo/Brand */}
         <div style={{
-          fontSize: '42px',
-          marginBottom: '16px',
+          fontSize: '32px',
+          marginBottom: '10px',
           fontWeight: 700,
           background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
           WebkitBackgroundClip: 'text',
@@ -46,9 +46,9 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
 
         {/* Title */}
         <h1 style={{
-          fontSize: '28px',
+          fontSize: '22px',
           fontWeight: '700',
-          marginBottom: '12px',
+          marginBottom: '8px',
           color: '#1a202c',
         }}>
           Welcome to GenUI
@@ -56,10 +56,10 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
 
         {/* Subtitle */}
         <p style={{
-          fontSize: '15px',
+          fontSize: '13px',
           color: '#718096',
-          marginBottom: '28px',
-          lineHeight: '1.6',
+          marginBottom: '18px',
+          lineHeight: '1.5',
         }}>
           Your AI-powered style extractor and code generator. Sign in to use GenUI and see your own history.
         </p>
@@ -67,24 +67,24 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
         {/* Features List */}
         <div style={{
           textAlign: 'left',
-          marginBottom: '28px',
-          padding: '20px',
+          marginBottom: '18px',
+          padding: '15px',
           background: '#f7fafc',
           borderRadius: '12px',
           border: '1px solid #e2e8f0',
         }}>
           <h3 style={{
-            fontSize: '14px',
+            fontSize: '13px',
             fontWeight: '600',
-            marginBottom: '14px',
+            marginBottom: '10px',
             color: '#2d3748',
           }}>
             What you'll get:
           </h3>
           <ul style={{
-            fontSize: '14px',
+            fontSize: '12px',
             color: '#4a5568',
-            lineHeight: '2',
+            lineHeight: '1.6',
             paddingLeft: '20px',
             margin: 0,
           }}>
@@ -101,15 +101,15 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
           disabled={isLoading}
           style={{
             width: '100%',
-            padding: '14px',
-            fontSize: '16px',
+            padding: '10px',
+            fontSize: '14px',
             fontWeight: '600',
             background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
             border: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '8px',
+            gap: '6px',
             boxShadow: '0 4px 12px rgba(6, 182, 212, 0.4)',
           }}
         >
@@ -140,8 +140,8 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
-            marginTop: '16px',
-            gap: '12px',
+            marginTop: '12px',
+            gap: '10px',
           }}>
             <Button
               onClick={onSignup}
@@ -149,8 +149,8 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
               disabled={isLoading || !onSignup}
               style={{
                 flex: 1,
-                padding: '12px',
-                fontSize: '14px',
+                padding: '8px',
+                fontSize: '12px',
               }}
             >
               Sign up
@@ -161,8 +161,8 @@ export function LoginPage({ onLogin, onSignup, onResetPassword, isLoading = fals
               disabled={isLoading || !onResetPassword}
               style={{
                 flex: 1,
-                padding: '12px',
-                fontSize: '14px',
+                padding: '8px',
+                fontSize: '12px',
               }}
             >
               Reset password
