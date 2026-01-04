@@ -23,7 +23,7 @@ Hackathon submission notes
 -------------------------
 - This `README.md` is intentionally concise for reviewers.
 - See `docs/SETUP_AND_DEPLOY.md` for full build/deploy steps and `sigma-package/` for packaging.
-- Keep per-package lockfiles (e.g., `frontend/package-lock.json`); the root `package-lock.json` is unused and removed from the repo.
+
 
 
 
