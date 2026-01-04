@@ -6,7 +6,7 @@ Materials included: GenUI – Description Document (PDF) and project PPT.
 
 Short description
 -----------------
-GenUI extracts visual styles from webpages and Figma, then converts them to production-ready CSS, Tailwind classes, or JSX styles for React.
+GenUI extracts visual styles from webpages,images and Figma, then converts them to production-ready CSS, Tailwind classes, or JSX styles for React.
 
 Quick run (build & package)
 ---------------------------
